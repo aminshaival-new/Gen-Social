@@ -920,6 +920,108 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 1080px) { .panel-schedule { width: 220px; } }
 @media (max-width: 880px)  { .panel-schedule { display: none; } }
 
+/* ══════════════════════════════════════════
+   CONFIG STATUS DOTS (topbar)
+══════════════════════════════════════════ */
+.config-status {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  border: 1.5px solid var(--border-soft);
+  cursor: pointer; transition: all .12s;
+}
+.config-status:hover { border-color: var(--border); }
+.config-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--border-soft); transition: background .3s;
+}
+.config-dot.ok  { background: #22c55e; }
+.config-dot.err { background: #ef4444; }
+.config-label { font-size: 10px; font-weight: 600; color: var(--text-3); letter-spacing: .5px; }
+
+/* ══════════════════════════════════════════
+   SETTINGS MODAL
+══════════════════════════════════════════ */
+.settings-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.settings-overlay.open { opacity: 1; pointer-events: all; }
+
+.settings-modal {
+  width: 520px; max-width: 95vw;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-modal);
+  transform: translateY(14px) scale(.98); transition: transform .22s;
+}
+.settings-overlay.open .settings-modal { transform: translateY(0) scale(1); }
+
+.settings-head {
+  padding: 22px 24px 16px;
+  border-bottom: 1.5px solid var(--border-soft);
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.settings-title {
+  font-family: var(--font-head);
+  font-size: 16px; font-weight: 800;
+  color: var(--text); letter-spacing: -.3px;
+}
+.settings-subtitle { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+.settings-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+.service-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border-soft);
+  background: var(--bg-input);
+}
+.service-icon { font-size: 22px; width: 36px; text-align: center; flex-shrink: 0; }
+.service-info { flex: 1; min-width: 0; }
+.service-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.service-desc { font-size: 11px; color: var(--text-3); }
+.service-status {
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  display: flex; align-items: center; gap: 5px;
+}
+.service-status .dot { width: 7px; height: 7px; border-radius: 50%; }
+.service-status.ok  .dot { background: #22c55e; }
+.service-status.err .dot { background: #ef4444; }
+.service-status.ok  { color: #22c55e; }
+.service-status.err { color: #ef4444; }
+
+.settings-footer {
+  padding: 14px 24px;
+  border-top: 1.5px solid var(--border-soft);
+  background: var(--bg-chip);
+  font-size: 11px; color: var(--text-3); line-height: 1.65;
+}
+.settings-footer code {
+  font-family: monospace; background: var(--bg-card);
+  border: 1px solid var(--border-soft); padding: 1px 5px;
+  color: var(--orange);
+}
+
+/* Caption rewrite button */
+.btn-rewrite {
+  padding: 4px 10px;
+  font-size: 10px; font-weight: 700;
+  background: transparent;
+  border: 1.5px solid var(--border-soft);
+  color: var(--orange);
+  cursor: pointer; transition: all .12s;
+}
+.btn-rewrite:hover { border-color: var(--orange); background: var(--orange-dim); box-shadow: var(--shadow-btn); transform: translate(-1px,-1px); }
+.btn-rewrite:disabled { opacity: .4; pointer-events: none; }
+
+/* Progress bar for image gen */
+.img-progress { height: 3px; background: var(--border-soft); margin-top: 10px; overflow: hidden; display: none; }
+.img-progress.active { display: block; }
+.img-progress-bar { height: 100%; background: var(--orange); width: 0%; transition: width .4s ease; }
+
 </style>
 </head>
 
@@ -939,6 +1041,12 @@ a { color: inherit; text-decoration: none; }
   </div>
 
   <div class="topbar-right">
+    <div class="config-status" onclick="openSettings()" title="API connections">
+      <div class="config-dot" id="dot-claude"  title="Claude"></div>
+      <div class="config-dot" id="dot-openai"  title="OpenAI"></div>
+      <div class="config-dot" id="dot-blotato" title="Blotato"></div>
+      <span class="config-label">APIs</span>
+    </div>
     <button class="btn-ghost">↑ Export All</button>
     <button class="btn-primary" onclick="openScheduleAll()">Schedule All →</button>
     <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀</button>
@@ -1099,6 +1207,49 @@ a { color: inherit; text-decoration: none; }
   </div>
 </div>
 
+<!-- ═══════════════ SETTINGS MODAL ═══════════════ -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnBg(event)">
+  <div class="settings-modal">
+    <div class="settings-head">
+      <div>
+        <div class="settings-title">API Connections</div>
+        <div class="settings-subtitle">Keys are stored securely in your .env file — never exposed to the browser</div>
+      </div>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-body" id="settingsBody">
+      <div class="service-row">
+        <div class="service-icon">🧠</div>
+        <div class="service-info">
+          <div class="service-name">Claude (Anthropic)</div>
+          <div class="service-desc">Generates post ideas, captions, and brand analysis</div>
+        </div>
+        <div class="service-status err" id="svc-claude"><div class="dot"></div><span>Checking…</span></div>
+      </div>
+      <div class="service-row">
+        <div class="service-icon">🎨</div>
+        <div class="service-info">
+          <div class="service-name">GPT Image 2 (OpenAI)</div>
+          <div class="service-desc">Generates the actual slide images for each carousel</div>
+        </div>
+        <div class="service-status err" id="svc-openai"><div class="dot"></div><span>Checking…</span></div>
+      </div>
+      <div class="service-row">
+        <div class="service-icon">📅</div>
+        <div class="service-info">
+          <div class="service-name">Blotato</div>
+          <div class="service-desc">Schedules finished posts to your Instagram account</div>
+        </div>
+        <div class="service-status err" id="svc-blotato"><div class="dot"></div><span>Checking…</span></div>
+      </div>
+    </div>
+    <div class="settings-footer">
+      Add your keys to <code>.env</code> in the project root, then run <code>npm start</code>.<br>
+      Copy <code>.env.example</code> to <code>.env</code> as a starting point.
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ TOAST ═══════════════ -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1218,6 +1369,31 @@ function drawSlide(canvas, slide, idx, brand) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
+
+  /* Real generated image — draw it and return */
+  if (slide.imageUrl) {
+    if (slide._img) {
+      ctx.drawImage(slide._img, 0, 0, w, h);
+      return;
+    }
+    /* Start loading; draw a placeholder, re-draw when ready */
+    ctx.fillStyle = BLACK;
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = hexToRgba(ORANGE, 0.25);
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = hexToRgba(WHITE, 0.6);
+    ctx.font = `600 ${w * 0.045}px Inter, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Loading image…', w / 2, h / 2);
+    const img = new Image();
+    img.onload = () => {
+      slide._img = img;
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+    };
+    img.src = slide.imageUrl;
+    return;
+  }
 
   const designs = {
     cover:     drawCoverSlide,
@@ -1505,10 +1681,14 @@ function renderPosts() {
       body.className = 'post-body';
       body.innerHTML = `
         <div class="post-body-inner">
-          <div class="caption-label">Caption</div>
+          <div class="section-row" style="margin-bottom:7px">
+            <div class="caption-label" style="margin-bottom:0">Caption</div>
+            <button class="btn-rewrite" id="rewrite-btn-${pi}" onclick="rewriteCaption(${pi})">✦ Rewrite with Claude</button>
+          </div>
           <textarea class="caption-textarea" rows="4" id="caption-${pi}"
             oninput="updateCaption(${pi},this.value)">${post.caption}</textarea>
           <div class="caption-count" id="count-${pi}">${post.caption.length} / 2200</div>
+          <div class="img-progress" id="img-progress-${pi}"><div class="img-progress-bar" id="img-bar-${pi}"></div></div>
           <div class="caption-label" style="margin-top:14px">Slide Previews</div>
           <div class="slides-preview-row" id="slides-row-${pi}"></div>
           <div class="post-footer">
@@ -1559,9 +1739,65 @@ function duplicatePost(pi) {
   copy.concept = 'Copy of ' + copy.concept; copy.expanded = false;
   state.posts.splice(pi+1, 0, copy); renderPosts(); toast('Post duplicated','info');
 }
-function makeImages(pi) {
-  state.posts[pi].status = 'pending'; state.posts[pi].expanded = true; renderPosts();
-  setTimeout(() => { state.posts[pi].status = 'ready'; renderPosts(); toast('Images generated ✦','success'); }, 1800);
+async function makeImages(pi) {
+  const post = state.posts[pi];
+  post.status = 'pending'; post.expanded = true; renderPosts();
+
+  const progress = document.getElementById(`img-progress-${pi}`);
+  const bar      = document.getElementById(`img-bar-${pi}`);
+  if (progress) progress.classList.add('active');
+
+  try {
+    for (let si = 0; si < post.slides.length; si++) {
+      const slide = post.slides[si];
+      const pct   = Math.round((si / post.slides.length) * 100);
+      if (bar) bar.style.width = pct + '%';
+
+      const fullPrompt = buildImagePrompt(slide, post, state.brand);
+      const res = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: fullPrompt })
+      });
+
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error || `HTTP ${res.status}`);
+      }
+
+      const { imageUrl } = await res.json();
+      slide.imageUrl = imageUrl;
+      delete slide._img; // reset cached Image object
+      if (bar) bar.style.width = Math.round(((si + 1) / post.slides.length) * 100) + '%';
+
+      /* Redraw thumbnails as each image arrives */
+      const thumb = document.querySelector(`#slides-row-${pi} .slide-thumb:nth-child(${si + 1}) canvas`);
+      if (thumb) drawSlide(thumb, slide, si, state.brand);
+    }
+
+    post.status = 'ready';
+    if (progress) progress.classList.remove('active');
+    renderPosts();
+    toast(`${post.slides.length} images generated ✦`, 'success');
+  } catch (err) {
+    post.status = 'ready';
+    if (progress) progress.classList.remove('active');
+    renderPosts();
+    toast('Image generation failed — ' + err.message, 'info');
+  }
+}
+
+function buildImagePrompt(slide, post, brand) {
+  const typeStyle = {
+    cover:     'hero product photography, dramatic lighting, bold composition',
+    feature:   'clean minimalist product flat lay, studio lighting, white space',
+    stat:      'bold graphic design, strong geometric shapes, high contrast',
+    lifestyle: 'warm lifestyle photography, natural light, aspirational scene',
+    cta:       'inviting product shot, warm tones, call-to-action energy'
+  };
+  const vibes = (brand.vibes || ['Premium']).join(' ');
+  const base  = slide.imagePrompt || `${slide.type} slide visual for ${brand.name}`;
+  return `${base}. Style: ${typeStyle[slide.type] || 'editorial'}, ${vibes} brand aesthetic, Instagram square 1:1 format, professional quality. No text, no typography in the image.`;
 }
 
 /* ════════════════════════════════════════════════════
@@ -1614,15 +1850,58 @@ function closeModal() { document.getElementById('modalOverlay').classList.remove
 function closeModalOnBg(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function schedulePost() {
+async function schedulePost() {
   const pi = state.modal.postIdx;
-  const t = document.getElementById('scheduleTimeInput').value;
-  if (!t) { toast('Pick a time first','info'); return; }
-  state.posts[pi].scheduledTime = t;
+  const t  = document.getElementById('scheduleTimeInput').value;
+  if (!t) { toast('Pick a time first', 'info'); return; }
+
+  const post = state.posts[pi];
+  const btn  = document.querySelector('.btn-schedule');
+  btn.textContent = 'Scheduling…'; btn.disabled = true;
+
+  /* Collect images — real URLs first, canvas fallback for ungenerated slides */
+  const images = post.slides.map((sl, si) => {
+    if (sl.imageUrl) return sl.imageUrl;
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 1080;
+    drawSlide(c, sl, si, state.brand);
+    return c.toDataURL('image/png');
+  });
+
+  const scheduledAt = new Date(t).toISOString();
+
+  /* Try real Blotato scheduling */
+  try {
+    const res = await fetch('/api/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caption: post.caption, images, scheduledAt })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    addToQueue(pi, t, 'blotato');
+    toast(`Scheduled on Instagram ✓`, 'success');
+  } catch (err) {
+    /* If server isn't running / Blotato not configured, save locally */
+    if (err.message.includes('fetch') || err.message.includes('503') || err.message.includes('not configured')) {
+      addToQueue(pi, t, 'local');
+      toast(`Saved to local queue — configure Blotato to publish to Instagram`, 'info');
+    } else {
+      btn.textContent = 'Schedule →'; btn.disabled = false;
+      toast('Schedule failed: ' + err.message, 'info');
+      return;
+    }
+  }
+
+  btn.textContent = 'Schedule →'; btn.disabled = false;
+}
+
+function addToQueue(pi, t, source) {
   const dt = new Date(t);
-  state.scheduledPosts.push({ postIdx: pi, time: dt, title: state.posts[pi].concept });
+  state.posts[pi].scheduledTime = t;
+  state.scheduledPosts.push({ postIdx: pi, time: dt, title: state.posts[pi].concept, source });
   renderScheduleQueue(); renderCalendar(); closeModal();
-  toast(`Scheduled for ${dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} at ${dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} ✓`, 'success');
+  const label = `${dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} at ${dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+  if (source === 'blotato') toast(`Live on Instagram: ${label} ✓`, 'success');
 }
 
 function downloadSlide() {
@@ -1648,101 +1927,178 @@ function downloadAll() {
 /* ════════════════════════════════════════════════════
    GENERATE
 ════════════════════════════════════════════════════ */
-function generatePosts() {
+async function generatePosts() {
   const prompt = document.getElementById('postPrompt').value.trim();
   const count  = parseInt(document.getElementById('countSelect').value);
-  if (!prompt) { toast('Add a prompt first','info'); return; }
-  const btn = document.getElementById('generateBtn');
-  btn.disabled = true; btn.textContent = '⌛ Generating…';
-  const list = document.getElementById('postsList'); list.innerHTML = '';
+  if (!prompt) { toast('Add a prompt first', 'info'); return; }
+
+  const btn  = document.getElementById('generateBtn');
+  const list = document.getElementById('postsList');
+  btn.disabled = true; btn.textContent = '⌛ Asking Claude…';
+  list.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const s = document.createElement('div');
-    s.className = 'shimmer'; s.style.cssText = 'height:72px;';
+    s.className = 'shimmer'; s.style.cssText = 'height:72px; margin-bottom:12px;';
     list.appendChild(s);
   }
-  setTimeout(() => {
-    state.posts = generateIdeas(prompt, count);
-    renderPosts(); btn.disabled = false; btn.textContent = '✦ Generate';
-    toast(`${count} ideas generated ✦`, 'success');
-  }, 1100 + Math.random() * 700);
+
+  try {
+    const res = await fetch('/api/generate-ideas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, count, brand: state.brand })
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || `HTTP ${res.status}`);
+    }
+
+    const { posts } = await res.json();
+    state.posts = posts.map((p, i) => ({
+      id: Date.now() + i,
+      concept: p.concept,
+      tags: p.tags || [],
+      caption: p.caption || '',
+      slides: (p.slides || []).map(sl => ({
+        type: sl.type || 'feature',
+        headline: sl.headline || '',
+        sub: sl.sub || '',
+        emoji: sl.emoji || '✨',
+        imagePrompt: sl.imagePrompt || ''
+      })),
+      status: 'ready', expanded: false, scheduledTime: null
+    }));
+
+    renderPosts();
+    toast(`${state.posts.length} ideas from Claude ✦`, 'success');
+  } catch (err) {
+    /* Fall back to local generation if server not running */
+    state.posts = generateIdeasLocal(prompt, count);
+    renderPosts();
+    toast('Server offline — using local generator. Start with npm start for Claude.', 'info');
+  } finally {
+    btn.disabled = false; btn.textContent = '✦ Generate';
+  }
 }
 
-function generateIdeas(prompt, count) {
-  const kw = extractKeyword(prompt);
+/* Local fallback generator (runs when server isn't available) */
+function generateIdeasLocal(prompt, count) {
+  const kw = prompt.split(' ').find(w => !['a','an','the','and','or','to','for','in','on','our'].includes(w.toLowerCase()) && w.length > 3) || 'product';
   const brand = state.brand.name;
-  const templates = [
-    { conceptFn: p=>`How ${brand} Is Changing ${extractKeyword(p)} Forever`,          tags:['#Innovation','#BrandStory','#WhyWeExist'],        slides:['cover','feature','stat','lifestyle','cta'] },
-    { conceptFn: p=>`5 Things to Know Before Buying Your Next ${extractKeyword(p)}`,  tags:['#BuyingGuide','#Tips','#EducateFirst'],           slides:['cover','feature','feature','stat','cta'] },
-    { conceptFn: p=>`The Minimal Way to ${extractAction(p)}`,                          tags:['#Lifestyle','#BrandVoice',`#${brand}`],          slides:['cover','lifestyle','lifestyle','feature','cta'] },
-    { conceptFn: p=>`Behind the Brand: Our ${extractKeyword(p)} Story`,                tags:['#BTS','#Transparency','#FounderStory'],          slides:['cover','feature','feature','lifestyle','cta'] },
-    { conceptFn: p=>`Why ${extractKeyword(p)} Matters More Than Ever in 2026`,         tags:['#ThoughtLeadership','#Industry','#Purpose'],     slides:['cover','stat','feature','stat','cta'] },
-    { conceptFn: p=>`Real Talk: What Our Customers Say About ${extractKeyword(p)}`,    tags:['#SocialProof','#CustomerLove','#Reviews'],       slides:['cover','feature','stat','lifestyle','cta'] },
-    { conceptFn: p=>`The ${brand} Guide to ${extractAction(p)} Better`,                tags:['#HowTo','#Tips','#ValueContent'],                slides:['cover','feature','feature','feature','cta'] },
-    { conceptFn: p=>`Summer Mood: ${extractKeyword(p)} Edition`,                       tags:['#Seasonal','#Lifestyle','#MoodBoard'],           slides:['cover','lifestyle','lifestyle','stat','cta'] },
-  ];
   const emojis = ['☀️','🌿','✨','🔥','💎','🌊','🎯','⚡','🌸','🏆','💫','🌱'];
-  const subs = ['You need to see this', `Only at ${brand}`, 'Swipe to discover', 'The story continues →', 'See the full picture'];
-  return Array.from({length: count}, (_, i) => {
+  const templates = [
+    { concept: `How ${brand} Is Changing ${kw}`, tags:['#Innovation','#BrandStory','#Purpose'] },
+    { concept: `5 Things to Know About ${kw}`,   tags:['#Tips','#Education','#Guide'] },
+    { concept: `Why ${kw} Matters in 2026`,       tags:['#Trends','#ThoughtLeadership','#Industry'] },
+    { concept: `The ${brand} Guide to ${kw}`,     tags:['#HowTo','#Tips','#ValueContent'] },
+    { concept: `Behind the Brand: ${kw} Story`,   tags:['#BTS','#Transparency','#FounderStory'] },
+  ];
+  return Array.from({ length: count }, (_, i) => {
     const t = templates[i % templates.length];
-    const concept = t.conceptFn(prompt);
-    const slides = t.slides.map((type, si) => ({
-      type, emoji: emojis[(i*3+si) % emojis.length],
-      headline: getHeadline(type, si, concept, prompt),
-      sub: subs[si % subs.length]
-    }));
     return {
-      id: Date.now()+i, concept, tags: t.tags,
-      caption: buildCaption(concept, prompt, t.tags),
-      slides, status: 'ready', expanded: false, scheduledTime: null
+      id: Date.now() + i, concept: t.concept, tags: t.tags,
+      caption: `${t.concept} 🔥\n\nSwipe to discover the full story.\n\n→ Link in bio\n\n${t.tags.join(' ')} #${brand}`,
+      slides: ['cover','feature','stat','lifestyle','cta'].map((type, si) => ({
+        type, emoji: emojis[(i*5+si) % emojis.length],
+        headline: type === 'cover' ? `${t.concept.slice(0,20)}\n` : type === 'stat' ? `${Math.floor(Math.random()*50+50)}%` : `${kw}\n${['Story','Moment','Guide','Value'][si % 4]}`,
+        sub: 'Swipe to see more →', imagePrompt: ''
+      })),
+      status: 'ready', expanded: false, scheduledTime: null
     };
   });
 }
 
-function extractKeyword(p) {
-  const skip = new Set(['a','an','the','and','or','to','for','in','on','our','their','is','are','we','how','should','about','from','with']);
-  return p.split(' ').find(w => !skip.has(w.toLowerCase()) && w.length > 3) || 'product';
-}
-function extractAction(p) {
-  const v = p.match(/\b(shop|buy|wear|live|work|move|run|walk|feel|look|find|choose|care|love|use)\b/i);
-  return v ? v[0] : 'shop';
-}
-function getHeadline(type, si, concept, prompt) {
-  const kw = extractKeyword(prompt);
-  const h = { cover:`${concept.slice(0,24)}\n${concept.slice(24,46)||''}`, feature:`Why ${kw}\nMatters`, stat:`${Math.floor(Math.random()*50+50)}%`, lifestyle:`Your ${kw}\nMoment`, cta:`Get Yours\nToday` };
-  return h[type] || `Slide ${si+1}`;
-}
-function buildCaption(concept, prompt, tags) {
-  const kw = extractKeyword(prompt);
-  return `${concept} 🔥\n\nHere's what you need to know about ${kw} — swipe through for the full story.\n\n→ Link in bio\n\n${tags.join(' ')} #${state.brand.name}`;
+async function rewriteCaption(pi) {
+  const post = state.posts[pi];
+  const btn  = document.getElementById(`rewrite-btn-${pi}`);
+  if (btn) { btn.disabled = true; btn.textContent = '⌛ Rewriting…'; }
+
+  try {
+    const res = await fetch('/api/rewrite-caption', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ concept: post.concept, brand: state.brand, currentCaption: post.caption })
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+    const { caption } = await res.json();
+    post.caption = caption;
+    const ta = document.getElementById(`caption-${pi}`);
+    const ct = document.getElementById(`count-${pi}`);
+    if (ta) ta.value = caption;
+    if (ct) ct.textContent = `${caption.length} / 2200`;
+    toast('Caption rewritten ✦', 'success');
+  } catch (err) {
+    toast('Rewrite failed — ' + err.message, 'info');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✦ Rewrite with Claude'; }
+  }
 }
 
 /* ════════════════════════════════════════════════════
    BRAND PANEL
 ════════════════════════════════════════════════════ */
-function fetchBrand() {
+async function fetchBrand() {
   const url = document.getElementById('brandUrlInput').value.trim();
   if (!url) return;
-  const btn = document.querySelector('.btn-fetch'); btn.textContent = '…'; btn.disabled = true;
-  const brands = {
-    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',        vibes:['Minimal','Sustainable','Natural'], pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
-    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',     vibes:['Bold','Athletic','Energetic'],      pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
-    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',  vibes:['Minimal','Tech','Premium'],         pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
-    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',         vibes:['Outdoor','Sustainable','Rugged'],   pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
-    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',       vibes:['Minimal','Beauty','Soft'],          pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
+  const btn = document.querySelector('.btn-fetch');
+  btn.textContent = '…'; btn.disabled = true;
+
+  /* Known brands — instant local fallback */
+  const localBrands = {
+    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',       vibes:['Minimal','Sustainable','Natural'], pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
+    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',    vibes:['Bold','Athletic','Energetic'],      pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
+    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue', vibes:['Minimal','Tech','Premium'],         pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
+    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',        vibes:['Outdoor','Sustainable','Rugged'],   pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
+    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',      vibes:['Minimal','Beauty','Soft'],          pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
   };
-  setTimeout(() => {
-    const key = Object.keys(brands).find(k => url.toLowerCase().includes(k));
-    const b = brands[key] || { name:'Brand', primaryColor:'#111', accentColor:'#F04E00', bgColor:'#F6F2EC', font:'Georgia', vibes:['Minimal','Modern'], pg:[['#F04E00','#ff8150'],['#111','#333'],['#F6F2EC','#fff'],['#888','#aaa']] };
-    state.brand.name = b.name; state.brand.primaryColor = b.primaryColor;
-    state.brand.accentColor = b.accentColor; state.brand.bgColor = b.bgColor;
-    state.brand.font = b.font; state.brand.vibes = b.vibes;
-    state.brand.photos = b.pg.map((g,i) => ({gradient:g, label:`Photo ${i+1}`}));
-    document.getElementById('brandMetaName').textContent = b.name;
-    document.querySelector('.topbar-name').innerHTML = `Gen <span>${b.name}</span>`;
-    btn.textContent = '→ Load'; btn.disabled = false;
-    renderBrandPanel();
-    toast(`Brand kit loaded: ${b.name} ✓`, 'success');
-  }, 850);
+
+  const localKey = Object.keys(localBrands).find(k => url.toLowerCase().includes(k));
+  if (localKey) {
+    applyBrandKit(localBrands[localKey], btn);
+    return;
+  }
+
+  /* Unknown URL — ask Claude to analyse it */
+  try {
+    const res = await fetch('/api/brand-analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+    const { brand } = await res.json();
+    /* Give it placeholder photos based on extracted colours */
+    brand.pg = [
+      [brand.primaryColor, brand.accentColor],
+      [brand.accentColor,  brand.bgColor],
+      [brand.bgColor,      brand.primaryColor],
+      [brand.primaryColor, brand.bgColor]
+    ];
+    applyBrandKit(brand, btn);
+  } catch (err) {
+    /* Generic fallback */
+    const domain = url.replace(/https?:\/\//, '').split('/')[0].split('.').slice(-2, -1)[0] || 'Brand';
+    applyBrandKit({
+      name: domain.charAt(0).toUpperCase() + domain.slice(1),
+      primaryColor: '#111111', accentColor: '#F04E00', bgColor: '#F6F2EC',
+      font: 'Georgia', vibes: ['Minimal', 'Modern'],
+      pg:[['#F04E00','#ff8150'],['#111','#333'],['#F6F2EC','#fff'],['#888','#aaa']]
+    }, btn);
+    toast('Claude unavailable — used domain name as fallback', 'info');
+  }
+}
+
+function applyBrandKit(b, btn) {
+  state.brand.name = b.name; state.brand.primaryColor = b.primaryColor;
+  state.brand.accentColor = b.accentColor; state.brand.bgColor = b.bgColor;
+  state.brand.font = b.font; state.brand.vibes = b.vibes || [];
+  state.brand.photos = (b.pg || []).map((g, i) => ({ gradient: g, label: `Photo ${i+1}` }));
+  document.getElementById('brandMetaName').textContent = b.name;
+  document.querySelector('.topbar-name').innerHTML = `Gen <span>${b.name}</span>`;
+  btn.textContent = '→ Load'; btn.disabled = false;
+  renderBrandPanel();
+  toast(`Brand kit loaded: ${b.name} ✓`, 'success');
 }
 
 function renderBrandPanel() {
@@ -1893,6 +2249,51 @@ function prevMonth() { state.calendar.month--; if(state.calendar.month<0){state.
 function nextMonth() { state.calendar.month++; if(state.calendar.month>11){state.calendar.month=0;state.calendar.year++;} renderCalendar(); }
 
 /* ════════════════════════════════════════════════════
+   SETTINGS MODAL + CONFIG STATUS
+════════════════════════════════════════════════════ */
+async function checkConfigStatus() {
+  try {
+    const res  = await fetch('/api/config-status');
+    if (!res.ok) throw new Error('no server');
+    const cfg  = await res.json();
+    setDot('dot-claude',  cfg.claude);
+    setDot('dot-openai',  cfg.openai);
+    setDot('dot-blotato', cfg.blotato);
+    setSvc('svc-claude',  cfg.claude,  'Connected', 'Add ANTHROPIC_API_KEY to .env');
+    setSvc('svc-openai',  cfg.openai,  'Connected', 'Add OPENAI_API_KEY to .env');
+    setSvc('svc-blotato', cfg.blotato, 'Connected', 'Add BLOTATO_API_KEY + BLOTATO_ACCOUNT_ID to .env');
+  } catch (_) {
+    /* Server not running — show all as unknown */
+    ['dot-claude','dot-openai','dot-blotato'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.className = 'config-dot err'; }
+    });
+    ['svc-claude','svc-openai','svc-blotato'].forEach(id => {
+      setSvc(id, false, '', 'Run npm start to activate');
+    });
+  }
+}
+
+function setDot(id, ok) {
+  const el = document.getElementById(id);
+  if (el) el.className = `config-dot ${ok ? 'ok' : 'err'}`;
+}
+
+function setSvc(id, ok, okLabel, errLabel) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = `service-status ${ok ? 'ok' : 'err'}`;
+  el.innerHTML = `<div class="dot"></div><span>${ok ? okLabel : errLabel}</span>`;
+}
+
+function openSettings()  {
+  checkConfigStatus();
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+function closeSettingsOnBg(e) { if (e.target === document.getElementById('settingsOverlay')) closeSettings(); }
+
+/* ════════════════════════════════════════════════════
    THEME TOGGLE
 ════════════════════════════════════════════════════ */
 function toggleTheme() {
@@ -1940,10 +2341,12 @@ function init() {
   renderPosts();
   renderCalendar();
   /* pre-loaded schedule entries */
-  state.scheduledPosts.push({ postIdx:0, time:new Date(2026,5,25,9,0),  title:SAMPLE_POSTS[0].concept });
-  state.scheduledPosts.push({ postIdx:2, time:new Date(2026,5,27,11,30),title:SAMPLE_POSTS[2].concept });
+  state.scheduledPosts.push({ postIdx:0, time:new Date(2026,5,25,9,0),  title:SAMPLE_POSTS[0].concept, source:'local' });
+  state.scheduledPosts.push({ postIdx:2, time:new Date(2026,5,27,11,30),title:SAMPLE_POSTS[2].concept, source:'local' });
   renderScheduleQueue();
   renderCalendar();
+  /* Check which APIs are live */
+  checkConfigStatus();
 }
 
 init();
