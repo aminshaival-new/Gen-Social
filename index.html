@@ -1,588 +1,958 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gen Social — Instagram Carousel Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ─── Reset & Base ─── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0d0d12;
-    --surface: #16161f;
-    --surface2: #1e1e2a;
-    --surface3: #252535;
-    --border: #2a2a3d;
-    --accent: #7c5cfc;
-    --accent2: #a78bfa;
-    --accent-glow: rgba(124,92,252,0.25);
-    --green: #22c55e;
-    --yellow: #f59e0b;
-    --pink: #ec4899;
-    --text: #e8e8f0;
-    --text2: #9090a8;
-    --text3: #60607a;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.45);
-    --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  }
-  html { font-size: 14px; scroll-behavior: smooth; }
-  body {
-    font-family: var(--font-sans);
-    background: var(--bg);
-    color: var(--text);
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  button { font-family: inherit; cursor: pointer; border: none; outline: none; }
-  input, textarea, select { font-family: inherit; outline: none; }
-  a { color: inherit; text-decoration: none; }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
-  /* ─── Top Bar ─── */
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; height: 54px;
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    flex-shrink: 0; z-index: 100;
-  }
-  .topbar-brand { display: flex; align-items: center; gap: 10px; }
-  .topbar-logo {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--accent), var(--pink));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 800; color: #fff;
-  }
-  .topbar-name { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
-  .topbar-name span { color: var(--accent2); }
-  .topbar-pills { display: flex; gap: 6px; }
-  .pill {
-    padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-    cursor: pointer; transition: all .15s;
-  }
-  .pill:hover { border-color: var(--accent); color: var(--accent2); }
-  .pill.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent2); }
-  .topbar-actions { display: flex; align-items: center; gap: 8px; }
-  .btn-sm {
-    padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-    cursor: pointer; transition: all .15s;
-  }
-  .btn-sm:hover { border-color: var(--accent); color: var(--accent2); }
-  .btn-primary {
-    padding: 7px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700;
-    background: var(--accent); color: #fff; cursor: pointer; transition: all .15s;
-    border: none; letter-spacing: -0.2px;
-  }
-  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
-  .btn-primary:active { transform: translateY(0); }
-  .avatar {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: linear-gradient(135deg, #7c5cfc, #ec4899);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
+/* ══════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════ */
+:root {
+  /* Accent — the one colour */
+  --orange: #F04E00;
+  --orange-dim: rgba(240,78,0,0.12);
+  --orange-faint: rgba(240,78,0,0.06);
 
-  /* ─── Main Layout ─── */
-  .main { display: flex; flex: 1; overflow: hidden; }
+  /* Light mode */
+  --bg:        #F6F2EC;
+  --bg-panel:  #FDFAF6;
+  --bg-card:   #FFFFFF;
+  --bg-input:  #FDFAF6;
+  --bg-chip:   #EDE9E2;
+  --text:      #111111;
+  --text-2:    #555550;
+  --text-3:    #999990;
+  --border:    #111111;
+  --border-soft: #DDD9D2;
+  --shadow-card: 4px 4px 0px #111111;
+  --shadow-btn:  3px 3px 0px #111111;
+  --shadow-lg:   6px 6px 0px #111111;
+  --shadow-modal:8px 8px 0px #111111;
 
-  /* ─── Left Panel — Brand Kit ─── */
-  .panel-brand {
-    width: 280px; flex-shrink: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow-y: auto;
-  }
-  .panel-header {
-    padding: 16px 16px 12px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .panel-title {
-    font-size: 11px; font-weight: 700; letter-spacing: .8px;
-    text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
-  }
-  .brand-url-row { display: flex; gap: 6px; }
-  .brand-url-input {
-    flex: 1; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 7px 10px; color: var(--text);
-    font-size: 12px; transition: border-color .15s;
-  }
-  .brand-url-input:focus { border-color: var(--accent); }
-  .brand-url-input::placeholder { color: var(--text3); }
-  .btn-fetch {
-    padding: 7px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;
-    background: var(--accent); color: #fff; cursor: pointer; transition: all .15s; border: none;
-    white-space: nowrap;
-  }
-  .btn-fetch:hover { background: var(--accent2); }
+  /* Dot texture */
+  --dot-color: rgba(0,0,0,0.07);
 
-  /* Brand sections */
-  .brand-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .section-label {
-    font-size: 10px; font-weight: 700; letter-spacing: .6px;
-    text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .section-edit-btn {
-    font-size: 10px; font-weight: 600; color: var(--accent2); cursor: pointer;
-    text-transform: none; letter-spacing: 0;
-    background: none; border: none; padding: 0;
-  }
-  .section-edit-btn:hover { color: var(--accent); }
+  /* Typography */
+  --font-head: 'Syne', 'Arial Black', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
 
-  /* Colors */
-  .color-swatches { display: flex; gap: 6px; flex-wrap: wrap; }
-  .swatch-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
-  .swatch {
-    width: 32px; height: 32px; border-radius: 8px; border: 2px solid transparent;
-    transition: all .15s; position: relative;
-  }
-  .swatch:hover { transform: scale(1.1); border-color: var(--accent); }
-  .swatch.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
-  .swatch-label { font-size: 9px; color: var(--text3); }
-  .swatch-add {
-    width: 32px; height: 32px; border-radius: 8px; border: 1.5px dashed var(--border);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--text3); font-size: 18px; cursor: pointer; transition: all .15s;
-  }
-  .swatch-add:hover { border-color: var(--accent); color: var(--accent2); }
+  /* Geometry */
+  --radius: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
 
-  /* Fonts */
-  .font-row {
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .font-item {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 8px 10px;
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; transition: all .15s;
-  }
-  .font-item:hover { border-color: var(--accent); }
-  .font-item.active { border-color: var(--accent); background: var(--accent-glow); }
-  .font-meta { display: flex; flex-direction: column; gap: 2px; }
-  .font-name { font-size: 12px; font-weight: 600; color: var(--text); }
-  .font-role { font-size: 10px; color: var(--text3); }
-  .font-preview { font-size: 13px; color: var(--text2); }
+[data-theme="dark"] {
+  --bg:        #111111;
+  --bg-panel:  #181818;
+  --bg-card:   #1F1F1F;
+  --bg-input:  #181818;
+  --bg-chip:   #2A2A2A;
+  --text:      #F0EDE8;
+  --text-2:    #9D9D95;
+  --text-3:    #5A5A54;
+  --border:    #F0EDE8;
+  --border-soft: #2E2E2E;
+  --shadow-card: 4px 4px 0px rgba(240,237,232,0.18);
+  --shadow-btn:  3px 3px 0px rgba(240,237,232,0.18);
+  --shadow-lg:   6px 6px 0px rgba(240,237,232,0.18);
+  --shadow-modal:8px 8px 0px rgba(240,237,232,0.18);
+  --dot-color: rgba(255,255,255,0.04);
+  --orange-dim: rgba(240,78,0,0.18);
+  --orange-faint: rgba(240,78,0,0.08);
+}
 
-  /* Vibe tags */
-  .vibe-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-  .vibe-tag {
-    padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 600;
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-    cursor: pointer; transition: all .15s;
-  }
-  .vibe-tag:hover { border-color: var(--accent); color: var(--accent2); }
-  .vibe-tag.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent2); }
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Photos grid */
-  .photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .photo-item {
-    aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden;
-    background: var(--surface2); border: 1.5px solid var(--border);
-    cursor: pointer; transition: all .15s; position: relative;
-  }
-  .photo-item:hover { border-color: var(--accent); }
-  .photo-item img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-item.selected::after {
-    content: '✓';
-    position: absolute; inset: 0;
-    background: rgba(124,92,252,0.5);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #fff; font-weight: 800;
-  }
-  .photo-add {
-    aspect-ratio: 1; border-radius: var(--radius-sm);
-    border: 1.5px dashed var(--border);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; cursor: pointer; transition: all .15s; color: var(--text3);
-    font-size: 10px; font-weight: 600; background: var(--surface2);
-  }
-  .photo-add:hover { border-color: var(--accent); color: var(--accent2); }
-  .photo-add-icon { font-size: 22px; }
+html { font-size: 14px; }
 
-  /* Detected badge */
-  .detected-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 600;
-    background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3);
-  }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Dotted texture */
+  background-image: radial-gradient(circle, var(--dot-color) 1.2px, transparent 1.2px);
+  background-size: 22px 22px;
+}
 
-  /* ─── Center Panel — Post Builder ─── */
-  .panel-posts {
-    flex: 1; display: flex; flex-direction: column;
-    background: var(--bg); overflow: hidden;
-  }
-  .posts-input-area {
-    padding: 20px; border-bottom: 1px solid var(--border);
-    background: var(--surface); flex-shrink: 0;
-  }
-  .posts-input-row { display: flex; gap: 10px; align-items: flex-end; }
-  .post-prompt-wrap { flex: 1; position: relative; }
-  .post-prompt {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 12px 14px; color: var(--text);
-    font-size: 13px; resize: none; transition: border-color .15s; line-height: 1.5;
-    min-height: 72px;
-  }
-  .post-prompt:focus { border-color: var(--accent); }
-  .post-prompt::placeholder { color: var(--text3); }
-  .post-controls { display: flex; gap: 8px; align-items: center; }
-  .count-select {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 8px 10px; color: var(--text);
-    font-size: 12px; font-weight: 600; cursor: pointer;
-  }
-  .count-select:focus { border-color: var(--accent); }
-  .btn-generate {
-    padding: 10px 22px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700;
-    background: linear-gradient(135deg, var(--accent), var(--pink));
-    color: #fff; cursor: pointer; transition: all .15s; border: none;
-    white-space: nowrap; letter-spacing: -0.2px;
-    box-shadow: 0 4px 16px rgba(124,92,252,0.3);
-  }
-  .btn-generate:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(124,92,252,0.4); }
-  .btn-generate:active { transform: translateY(0); }
-  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .posts-meta { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-  .meta-text { font-size: 11px; color: var(--text3); }
-  .meta-chip {
-    padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600;
-    background: var(--surface3); color: var(--text2);
-  }
+button  { font-family: var(--font-body); cursor: pointer; border: none; outline: none; }
+input, textarea, select { font-family: var(--font-body); outline: none; }
+a { color: inherit; text-decoration: none; }
 
-  /* Posts list */
-  .posts-list {
-    flex: 1; overflow-y: auto; padding: 16px;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .post-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    transition: all .2s; cursor: pointer;
-  }
-  .post-card:hover { border-color: rgba(124,92,252,0.4); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-  .post-card.expanded { border-color: var(--accent); }
-  .post-card-header {
-    padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px;
-  }
-  .post-num {
-    width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
-    background: var(--accent-glow); border: 1px solid var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: var(--accent2); margin-top: 1px;
-  }
-  .post-info { flex: 1; min-width: 0; }
-  .post-concept { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
-  .post-tags { display: flex; gap: 5px; flex-wrap: wrap; }
-  .post-tag {
-    padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 600;
-    background: var(--surface2); color: var(--text3); border: 1px solid var(--border);
-  }
-  .post-card-actions { display: flex; gap: 6px; align-items: flex-start; flex-shrink: 0; }
-  .btn-icon {
-    width: 28px; height: 28px; border-radius: 7px;
-    background: var(--surface2); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .15s; font-size: 13px; color: var(--text2);
-  }
-  .btn-icon:hover { border-color: var(--accent); color: var(--accent2); }
-  .btn-make-images {
-    padding: 6px 12px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700;
-    background: var(--accent); color: #fff; cursor: pointer; transition: all .15s; border: none;
-    white-space: nowrap;
-  }
-  .btn-make-images:hover { background: var(--accent2); }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-soft); border-radius: 2px; }
 
-  /* Caption area */
-  .post-body { padding: 0 16px 16px; }
-  .post-caption-wrap { position: relative; margin-bottom: 12px; }
-  .caption-label { font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
-  .caption-textarea {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text);
-    font-size: 12px; resize: none; line-height: 1.5; min-height: 70px;
-    transition: border-color .15s;
-  }
-  .caption-textarea:focus { border-color: var(--accent); }
-  .caption-count { font-size: 10px; color: var(--text3); text-align: right; margin-top: 4px; }
+/* ══════════════════════════════════════════
+   TOP BAR
+══════════════════════════════════════════ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 58px;
+  background: var(--bg-panel);
+  border-bottom: 1.5px solid var(--border);
+  flex-shrink: 0; z-index: 100;
+}
 
-  /* Slide previews */
-  .slides-preview-row {
-    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
-  }
-  .slide-thumb {
-    flex-shrink: 0; width: 80px; height: 80px; border-radius: 8px;
-    overflow: hidden; border: 1.5px solid var(--border);
-    cursor: pointer; transition: all .15s; position: relative;
-  }
-  .slide-thumb:hover { border-color: var(--accent); transform: scale(1.03); }
-  .slide-thumb canvas { width: 100%; height: 100%; }
-  .slide-num {
-    position: absolute; bottom: 4px; right: 5px;
-    font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.8);
-    background: rgba(0,0,0,0.5); padding: 1px 5px; border-radius: 99px;
-  }
-  .post-footer {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 12px;
-  }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
-  .status-dot.ready { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
-  .status-dot.pending { background: var(--yellow); animation: pulse 1.5s infinite; }
-  .status-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); }
-  .btn-open-big {
-    padding: 6px 14px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700;
-    background: transparent; border: 1px solid var(--border); color: var(--text2);
-    cursor: pointer; transition: all .15s;
-  }
-  .btn-open-big:hover { border-color: var(--accent); color: var(--accent2); }
+.topbar-brand { display: flex; align-items: center; gap: 12px; }
 
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.topbar-logo {
+  width: 34px; height: 34px;
+  background: var(--orange);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head);
+  font-size: 17px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+}
 
-  /* ─── Right Panel — Schedule ─── */
-  .panel-schedule {
-    width: 260px; flex-shrink: 0;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    overflow-y: auto;
-  }
-  .schedule-header {
-    padding: 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .schedule-queue { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-  .queue-item {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 12px;
-    display: flex; align-items: center; gap: 10px;
-    transition: all .15s;
-  }
-  .queue-item:hover { border-color: rgba(124,92,252,0.3); }
-  .queue-thumb {
-    width: 40px; height: 40px; border-radius: 6px; flex-shrink: 0; overflow: hidden;
-  }
-  .queue-thumb canvas { width: 100%; height: 100%; }
-  .queue-info { flex: 1; min-width: 0; }
-  .queue-title { font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .queue-time { font-size: 10px; color: var(--text3); }
-  .queue-status { flex-shrink: 0; }
-  .dot-green { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.4); }
-  .dot-yellow { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); animation: pulse 1.5s infinite; }
-  .schedule-empty {
-    padding: 32px 16px; text-align: center; color: var(--text3); font-size: 12px; line-height: 1.6;
-  }
-  .schedule-empty-icon { font-size: 32px; margin-bottom: 8px; }
-  .calendar-mini { padding: 12px 16px; border-top: 1px solid var(--border); }
-  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .cal-month { font-size: 12px; font-weight: 700; }
-  .cal-nav { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; padding: 0 4px; }
-  .cal-nav:hover { color: var(--text); }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-  .cal-day-header { font-size: 9px; font-weight: 700; text-align: center; color: var(--text3); padding: 2px; letter-spacing: .5px; }
-  .cal-day {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 500; border-radius: 5px; cursor: pointer;
-    transition: all .15s; color: var(--text2);
-  }
-  .cal-day:hover { background: var(--surface3); }
-  .cal-day.today { background: var(--accent-glow); color: var(--accent2); font-weight: 800; }
-  .cal-day.has-post { position: relative; }
-  .cal-day.has-post::after {
-    content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
-    position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-  }
-  .cal-day.empty { pointer-events: none; }
-  .platform-select { padding: 12px 16px; border-top: 1px solid var(--border); }
-  .platform-row { display: flex; gap: 6px; }
-  .platform-btn {
-    flex: 1; padding: 7px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600;
-    background: var(--surface2); border: 1.5px solid var(--border); color: var(--text2);
-    cursor: pointer; transition: all .15s; text-align: center;
-  }
-  .platform-btn:hover { border-color: var(--accent); color: var(--accent2); }
-  .platform-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent2); }
+.topbar-name {
+  font-family: var(--font-head);
+  font-size: 18px; font-weight: 800;
+  letter-spacing: -0.5px; color: var(--text);
+}
+.topbar-name span { color: var(--orange); }
 
-  /* ─── Modal ─── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
-    z-index: 999; display: flex; align-items: center; justify-content: center;
-    padding: 24px; opacity: 0; pointer-events: none; transition: opacity .2s;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    width: 900px; max-width: 100%; max-height: 90vh;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-    display: flex; flex-direction: column; overflow: hidden;
-    transform: scale(0.95) translateY(20px); transition: transform .25s;
-  }
-  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
-  .modal-header {
-    padding: 20px 24px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-  }
-  .modal-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
-  .modal-subtitle { font-size: 12px; color: var(--text3); margin-top: 2px; }
-  .modal-close {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: var(--surface2); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 16px; color: var(--text2); transition: all .15s;
-  }
-  .modal-close:hover { border-color: var(--accent); color: var(--text); }
-  .modal-body { flex: 1; overflow-y: auto; padding: 24px; }
-  .carousel-viewer {
-    display: flex; gap: 16px; align-items: flex-start;
-  }
-  .carousel-main-slide {
-    flex: 1; position: relative;
-  }
-  .carousel-canvas-wrap {
-    border-radius: 16px; overflow: hidden; border: 1.5px solid var(--border);
-    background: var(--surface2); aspect-ratio: 1; max-width: 440px; margin: 0 auto;
-  }
-  .carousel-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
-  .carousel-slide-nav {
-    display: flex; align-items: center; justify-content: center;
-    gap: 12px; margin-top: 12px;
-  }
-  .nav-btn {
-    width: 34px; height: 34px; border-radius: 8px;
-    background: var(--surface2); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 15px; color: var(--text2); transition: all .15s;
-  }
-  .nav-btn:hover { border-color: var(--accent); color: var(--accent2); }
-  .nav-btn:disabled { opacity: 0.4; pointer-events: none; }
-  .slide-counter { font-size: 12px; font-weight: 700; color: var(--text2); min-width: 60px; text-align: center; }
-  .carousel-sidebar { width: 220px; flex-shrink: 0; }
-  .carousel-strip {
-    display: flex; flex-direction: column; gap: 8px;
-    max-height: 420px; overflow-y: auto;
-  }
-  .strip-thumb {
-    border-radius: 8px; overflow: hidden; border: 1.5px solid var(--border);
-    cursor: pointer; transition: all .15s; flex-shrink: 0; position: relative;
-    aspect-ratio: 1;
-  }
-  .strip-thumb:hover { border-color: rgba(124,92,252,0.4); }
-  .strip-thumb.active-slide { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
-  .strip-thumb canvas { width: 100%; height: 100%; display: block; }
-  .strip-label {
-    position: absolute; bottom: 5px; left: 6px;
-    font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.8);
-    background: rgba(0,0,0,0.6); padding: 2px 5px; border-radius: 4px;
-  }
-  .modal-footer {
-    padding: 16px 24px; border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    background: var(--surface);
-  }
-  .modal-footer-left { display: flex; gap: 8px; align-items: center; }
-  .modal-footer-right { display: flex; gap: 8px; align-items: center; }
-  .schedule-time-input {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 7px 10px; color: var(--text);
-    font-size: 12px; width: 160px;
-  }
-  .schedule-time-input:focus { border-color: var(--accent); }
-  .btn-schedule {
-    padding: 9px 22px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700;
-    background: linear-gradient(135deg, var(--green), #16a34a);
-    color: #fff; cursor: pointer; transition: all .15s; border: none;
-    box-shadow: 0 4px 16px rgba(34,197,94,0.25);
-  }
-  .btn-schedule:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-download {
-    padding: 9px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
-    background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
-    cursor: pointer; transition: all .15s;
-  }
-  .btn-download:hover { border-color: var(--accent); color: var(--accent2); }
+.topbar-pills { display: flex; gap: 4px; }
 
-  /* ─── Loading shimmer ─── */
-  .shimmer {
-    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
-    background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm);
-  }
-  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.pill {
+  padding: 5px 14px;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 600;
+  background: transparent;
+  border: 1.5px solid var(--border-soft);
+  color: var(--text-2);
+  cursor: pointer; transition: all .12s;
+}
+.pill:hover { border-color: var(--border); color: var(--text); }
+.pill.active {
+  background: var(--text); color: var(--bg);
+  border-color: var(--text);
+}
 
-  /* ─── Toast ─── */
-  .toast-container {
-    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
-  }
-  .toast {
-    padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
-    background: var(--surface3); border: 1px solid var(--border); color: var(--text);
-    box-shadow: var(--shadow); transform: translateX(120%); transition: transform .3s;
-    display: flex; align-items: center; gap: 8px; max-width: 300px;
-  }
-  .toast.show { transform: translateX(0); }
-  .toast.success { border-color: var(--green); }
-  .toast.info { border-color: var(--accent); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
 
-  /* ─── Generating overlay ─── */
-  .gen-overlay {
-    position: absolute; inset: 0; background: rgba(13,13,18,0.8);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    border-radius: var(--radius); z-index: 10; gap: 10px; pointer-events: none; opacity: 0;
-    transition: opacity .2s;
-  }
-  .gen-overlay.active { opacity: 1; pointer-events: all; }
-  .spinner {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 3px solid var(--border); border-top-color: var(--accent);
-    animation: spin .7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .gen-text { font-size: 12px; font-weight: 600; color: var(--text2); }
+.btn-ghost {
+  padding: 7px 16px;
+  font-size: 12px; font-weight: 600;
+  background: transparent;
+  border: 1.5px solid var(--border-soft);
+  color: var(--text-2);
+  cursor: pointer; transition: all .12s;
+}
+.btn-ghost:hover { border-color: var(--border); color: var(--text); }
 
-  /* Responsive tweaks */
-  @media (max-width: 1100px) {
-    .panel-schedule { width: 220px; }
-  }
-  @media (max-width: 900px) {
-    .panel-brand { width: 240px; }
-    .panel-schedule { display: none; }
-  }
+.btn-primary {
+  padding: 8px 20px;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 700;
+  background: var(--orange); color: #fff;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
+  cursor: pointer; transition: transform .1s, box-shadow .1s;
+  letter-spacing: 0.2px;
+}
+.btn-primary:hover  { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--border); }
+.btn-primary:active { transform: translate(1px,1px);  box-shadow: 2px 2px 0 var(--border); }
+
+.theme-toggle {
+  width: 34px; height: 34px;
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; cursor: pointer; transition: all .12s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover { border-color: var(--border); }
+
+.avatar {
+  width: 32px; height: 32px;
+  background: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head);
+  font-size: 13px; font-weight: 800;
+  color: var(--bg); flex-shrink: 0;
+  border: 1.5px solid var(--border);
+}
+
+/* ══════════════════════════════════════════
+   MAIN 3-COLUMN LAYOUT
+══════════════════════════════════════════ */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ══════════════════════════════════════════
+   LEFT PANEL — BRAND KIT
+══════════════════════════════════════════ */
+.panel-brand {
+  width: 272px; flex-shrink: 0;
+  background: var(--bg-panel);
+  border-right: 1.5px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+
+.panel-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1.5px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+.panel-label {
+  font-family: var(--font-head);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 12px;
+}
+
+.brand-url-row { display: flex; gap: 0; }
+
+.brand-url-input {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-right: none;
+  padding: 8px 10px;
+  color: var(--text); font-size: 12px;
+  transition: border-color .12s;
+}
+.brand-url-input:focus { border-color: var(--orange); }
+.brand-url-input::placeholder { color: var(--text-3); }
+
+.btn-fetch {
+  padding: 8px 14px;
+  font-size: 12px; font-weight: 700;
+  background: var(--text); color: var(--bg);
+  border: 1.5px solid var(--border);
+  cursor: pointer; white-space: nowrap;
+  transition: background .12s;
+}
+.btn-fetch:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+/* ── Brand sub-sections ── */
+.brand-section {
+  padding: 16px 20px;
+  border-bottom: 1.5px solid var(--border-soft);
+}
+
+.section-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-3);
+}
+.section-action {
+  font-size: 11px; font-weight: 600; color: var(--orange);
+  background: none; border: none; padding: 0; cursor: pointer;
+}
+.section-action:hover { text-decoration: underline; }
+
+/* Colour swatches */
+.color-swatches { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-end; }
+
+.swatch-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+
+.swatch {
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--border-soft);
+  transition: all .12s; position: relative;
+}
+.swatch:hover { transform: translate(-1px,-1px); box-shadow: 2px 2px 0 var(--border); }
+.swatch.selected {
+  border-color: var(--border);
+  box-shadow: 2px 2px 0 var(--orange);
+  transform: translate(-1px,-1px);
+}
+.swatch-label { font-size: 8px; color: var(--text-3); font-weight: 500; }
+
+.swatch-add {
+  width: 28px; height: 28px;
+  border: 1.5px dashed var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-3); font-size: 16px; cursor: pointer;
+  transition: all .12s;
+}
+.swatch-add:hover { border-color: var(--orange); color: var(--orange); }
+
+/* Font list */
+.font-list { display: flex; flex-direction: column; gap: 5px; }
+
+.font-item {
+  background: var(--bg-chip);
+  border: 1.5px solid transparent;
+  padding: 8px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: all .12s;
+}
+.font-item:hover { border-color: var(--border-soft); }
+.font-item.active {
+  border-color: var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-btn);
+}
+.font-meta { display: flex; flex-direction: column; gap: 1px; }
+.font-name-label { font-size: 12px; font-weight: 600; color: var(--text); }
+.font-role-label { font-size: 10px; color: var(--text-3); font-weight: 500; }
+.font-preview-text { font-size: 16px; color: var(--text-2); line-height: 1; }
+
+/* Vibe tags */
+.vibe-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.vibe-tag {
+  padding: 4px 10px;
+  font-size: 11px; font-weight: 600;
+  background: var(--bg-chip);
+  border: 1.5px solid transparent;
+  color: var(--text-2);
+  cursor: pointer; transition: all .12s;
+}
+.vibe-tag:hover { border-color: var(--border-soft); color: var(--text); }
+.vibe-tag.active {
+  background: var(--orange-dim);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+/* Photo grid */
+.photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+.photo-item {
+  aspect-ratio: 1; overflow: hidden;
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border-soft);
+  cursor: pointer; transition: all .12s; position: relative;
+}
+.photo-item:hover { border-color: var(--border); box-shadow: var(--shadow-btn); transform: translate(-1px,-1px); }
+.photo-item.selected::after {
+  content: '✓';
+  position: absolute; inset: 0;
+  background: rgba(240,78,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff; font-weight: 800;
+}
+.photo-item canvas { width: 100%; height: 100%; display: block; }
+
+.photo-add {
+  aspect-ratio: 1;
+  border: 1.5px dashed var(--border-soft);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; cursor: pointer; transition: all .12s;
+  color: var(--text-3); font-size: 10px; font-weight: 600;
+  background: var(--bg-chip);
+}
+.photo-add:hover { border-color: var(--orange); color: var(--orange); }
+.photo-add-icon { font-size: 20px; }
+
+.detected-badge {
+  padding: 2px 7px;
+  font-size: 10px; font-weight: 600;
+  background: var(--orange-dim);
+  color: var(--orange);
+  border: 1.5px solid var(--orange);
+}
+
+/* ══════════════════════════════════════════
+   CENTER — POST BUILDER
+══════════════════════════════════════════ */
+.panel-posts {
+  flex: 1; display: flex; flex-direction: column;
+  background: transparent; overflow: hidden;
+}
+
+/* Prompt bar */
+.posts-input-area {
+  padding: 20px 24px 16px;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+}
+
+.prompt-label {
+  font-family: var(--font-head);
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px; color: var(--text);
+  margin-bottom: 14px;
+}
+
+.posts-input-row { display: flex; gap: 0; align-items: stretch; }
+
+.post-prompt {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-right: none;
+  padding: 12px 14px; color: var(--text);
+  font-size: 13px; resize: none; line-height: 1.55;
+  min-height: 70px; transition: border-color .12s;
+}
+.post-prompt:focus { border-color: var(--orange); }
+.post-prompt::placeholder { color: var(--text-3); }
+
+.prompt-side { display: flex; flex-direction: column; }
+
+.count-select {
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border);
+  border-bottom: none;
+  padding: 0 10px; color: var(--text);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; height: 36px; min-width: 100px;
+}
+.count-select:focus { border-color: var(--orange); }
+
+.btn-generate {
+  flex: 1;
+  padding: 0 22px;
+  font-family: var(--font-head);
+  font-size: 14px; font-weight: 800;
+  background: var(--orange); color: #fff;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
+  cursor: pointer; transition: transform .1s, box-shadow .1s;
+  white-space: nowrap; min-width: 130px;
+  letter-spacing: 0.2px;
+}
+.btn-generate:hover  { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--border); }
+.btn-generate:active { transform: translate(1px,1px);  box-shadow: 1px 1px 0 var(--border); }
+.btn-generate:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: var(--shadow-btn); }
+
+.posts-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px; flex-wrap: wrap;
+}
+.meta-text { font-size: 11px; color: var(--text-3); font-weight: 500; }
+.meta-text strong { color: var(--text-2); font-weight: 600; }
+
+.meta-chip {
+  padding: 3px 9px;
+  font-size: 10px; font-weight: 600;
+  background: var(--bg-chip);
+  border: 1px solid var(--border-soft);
+  color: var(--text-2);
+}
+
+/* Posts list */
+.posts-list {
+  flex: 1; overflow-y: auto;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* ── Post card ── */
+.post-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: transform .12s, box-shadow .12s;
+  cursor: pointer;
+}
+.post-card:hover {
+  transform: translate(-2px,-2px);
+  box-shadow: 6px 6px 0 var(--border);
+}
+.post-card.expanded {
+  transform: none;
+  box-shadow: var(--shadow-card);
+  border-color: var(--orange);
+}
+.post-card.expanded:hover { transform: none; }
+
+.post-card-header {
+  padding: 16px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+
+.post-num {
+  width: 26px; height: 26px; flex-shrink: 0;
+  background: var(--orange-dim);
+  border: 1.5px solid var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head);
+  font-size: 12px; font-weight: 800; color: var(--orange);
+  margin-top: 1px;
+}
+
+.post-info { flex: 1; min-width: 0; }
+
+.post-concept {
+  font-family: var(--font-head);
+  font-size: 14px; font-weight: 800;
+  color: var(--text); margin-bottom: 6px; line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+.post-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.post-tag {
+  padding: 2px 8px;
+  font-size: 10px; font-weight: 600;
+  background: var(--bg-chip);
+  border: 1px solid var(--border-soft);
+  color: var(--text-3);
+}
+
+.post-card-actions {
+  display: flex; gap: 6px; align-items: flex-start; flex-shrink: 0;
+}
+
+.btn-icon {
+  width: 30px; height: 30px;
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .12s;
+  font-size: 12px; color: var(--text-2);
+}
+.btn-icon:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-btn); transform: translate(-1px,-1px); }
+
+.btn-make-images {
+  padding: 6px 14px;
+  font-size: 11px; font-weight: 700;
+  background: var(--text); color: var(--bg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
+  cursor: pointer; transition: all .12s; white-space: nowrap;
+}
+.btn-make-images:hover {
+  background: var(--orange); border-color: var(--orange); color: #fff;
+  transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--border);
+}
+
+/* Expanded body */
+.post-body {
+  padding: 0 18px 18px;
+  border-top: 1.5px solid var(--border-soft);
+  margin-top: 0;
+}
+.post-body-inner { padding-top: 16px; }
+
+.caption-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 7px;
+}
+
+.caption-textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-soft);
+  padding: 10px 12px; color: var(--text);
+  font-size: 12px; line-height: 1.6;
+  resize: none; min-height: 72px;
+  transition: border-color .12s;
+}
+.caption-textarea:focus { border-color: var(--orange); }
+
+.caption-count { font-size: 10px; color: var(--text-3); text-align: right; margin-top: 4px; font-weight: 500; }
+
+.slides-preview-row {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
+  margin-top: 14px; margin-bottom: 14px;
+}
+
+.slide-thumb {
+  flex-shrink: 0; width: 78px; height: 78px; overflow: hidden;
+  border: 1.5px solid var(--border-soft);
+  cursor: pointer; transition: all .12s; position: relative;
+}
+.slide-thumb:hover {
+  border-color: var(--orange);
+  transform: translate(-1px,-1px);
+  box-shadow: 2px 2px 0 var(--border);
+}
+.slide-thumb canvas { width: 100%; height: 100%; display: block; }
+.slide-num {
+  position: absolute; bottom: 4px; right: 4px;
+  font-size: 9px; font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.55);
+  padding: 1px 5px;
+}
+
+.post-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.status-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-3); font-weight: 500; }
+
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-soft); }
+.status-dot.ready  { background: #22c55e; box-shadow: 0 0 5px rgba(34,197,94,0.4); }
+.status-dot.pending { background: var(--orange); animation: pulse 1.4s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+.btn-open-big {
+  padding: 6px 14px;
+  font-size: 11px; font-weight: 700;
+  background: transparent;
+  border: 1.5px solid var(--border-soft);
+  color: var(--text-2);
+  cursor: pointer; transition: all .12s;
+}
+.btn-open-big:hover {
+  border-color: var(--border); color: var(--text);
+  box-shadow: var(--shadow-btn); transform: translate(-1px,-1px);
+}
+
+/* ══════════════════════════════════════════
+   RIGHT PANEL — SCHEDULE
+══════════════════════════════════════════ */
+.panel-schedule {
+  width: 252px; flex-shrink: 0;
+  background: var(--bg-panel);
+  border-left: 1.5px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+}
+
+.schedule-header {
+  padding: 20px 18px 14px;
+  border-bottom: 1.5px solid var(--border-soft);
+  flex-shrink: 0;
+}
+
+.schedule-section-title {
+  font-family: var(--font-head);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Platform tabs */
+.platform-row {
+  display: flex;
+  border-bottom: 1.5px solid var(--border-soft);
+}
+.platform-btn {
+  flex: 1; padding: 9px 4px;
+  font-size: 11px; font-weight: 600;
+  background: transparent;
+  border: none;
+  border-right: 1.5px solid var(--border-soft);
+  color: var(--text-3);
+  cursor: pointer; transition: all .12s;
+}
+.platform-btn:last-child { border-right: none; }
+.platform-btn:hover { color: var(--text); background: var(--bg-chip); }
+.platform-btn.active {
+  background: var(--orange-dim);
+  color: var(--orange);
+  font-weight: 700;
+}
+
+/* Calendar */
+.calendar-mini {
+  padding: 16px 18px;
+  border-bottom: 1.5px solid var(--border-soft);
+}
+
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month {
+  font-family: var(--font-head);
+  font-size: 13px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.3px;
+}
+.cal-nav-wrap { display: flex; gap: 0; }
+.cal-nav {
+  width: 26px; height: 26px;
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-2); cursor: pointer; font-size: 13px;
+  transition: all .12s;
+}
+.cal-nav:first-child { border-right: none; }
+.cal-nav:hover { border-color: var(--border); color: var(--text); }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.cal-day-header {
+  font-size: 9px; font-weight: 700; text-align: center;
+  color: var(--text-3); padding: 3px 0;
+  letter-spacing: .5px;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 500; cursor: pointer;
+  transition: all .12s; color: var(--text-2); position: relative;
+}
+.cal-day:hover { background: var(--bg-chip); color: var(--text); }
+.cal-day.today {
+  background: var(--text); color: var(--bg);
+  font-weight: 700;
+}
+.cal-day.has-post::after {
+  content: ''; width: 4px; height: 4px;
+  background: var(--orange);
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+}
+.cal-day.empty { pointer-events: none; }
+
+/* Queue */
+.schedule-queue { padding: 12px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+
+.schedule-empty {
+  padding: 28px 12px; text-align: center;
+  color: var(--text-3); font-size: 12px; line-height: 1.65; flex: 1;
+}
+.schedule-empty-icon { font-size: 28px; margin-bottom: 8px; }
+
+.queue-item {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-soft);
+  padding: 9px 11px;
+  display: flex; align-items: center; gap: 9px;
+  transition: all .12s; cursor: default;
+  box-shadow: var(--shadow-card);
+}
+.queue-item:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(--border); border-color: var(--border); }
+
+.queue-thumb { width: 36px; height: 36px; flex-shrink: 0; overflow: hidden; border: 1px solid var(--border-soft); }
+.queue-thumb canvas { width: 100%; height: 100%; display: block; }
+
+.queue-info { flex: 1; min-width: 0; }
+.queue-title { font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-time  { font-size: 10px; color: var(--text-3); font-weight: 500; }
+
+.dot-green  { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+.dot-orange { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: pulse 1.4s infinite; }
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999; display: flex; align-items: center; justify-content: center;
+  padding: 28px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  width: 920px; max-width: 100%; max-height: 90vh;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-modal);
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(16px) scale(0.98); transition: transform .22s;
+}
+.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+.modal-header {
+  padding: 22px 28px;
+  border-bottom: 1.5px solid var(--border-soft);
+  display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0;
+}
+
+.modal-title {
+  font-family: var(--font-head);
+  font-size: 18px; font-weight: 800;
+  color: var(--text); letter-spacing: -0.4px;
+  max-width: 580px; line-height: 1.2;
+}
+.modal-subtitle { font-size: 12px; color: var(--text-3); margin-top: 4px; font-weight: 500; }
+
+.modal-close {
+  width: 32px; height: 32px;
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: var(--text-2); transition: all .12s;
+  flex-shrink: 0; margin-top: 2px;
+}
+.modal-close:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-btn); transform: translate(-1px,-1px); }
+
+.modal-body { flex: 1; overflow-y: auto; padding: 28px; }
+
+.carousel-viewer { display: flex; gap: 20px; align-items: flex-start; }
+
+.carousel-main-slide { flex: 1; }
+
+.carousel-canvas-wrap {
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  aspect-ratio: 1; max-width: 440px; margin: 0 auto;
+  background: var(--bg-chip);
+}
+.carousel-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+.carousel-slide-nav {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin-top: 16px;
+}
+
+.nav-btn {
+  width: 34px; height: 34px;
+  background: var(--bg-chip);
+  border: 1.5px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: var(--text-2); transition: all .12s;
+}
+.nav-btn:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-btn); transform: translate(-1px,-1px); }
+.nav-btn:disabled { opacity: 0.35; pointer-events: none; }
+
+.slide-counter { font-size: 12px; font-weight: 700; color: var(--text-2); min-width: 54px; text-align: center; }
+
+.carousel-sidebar { width: 210px; flex-shrink: 0; }
+
+.sidebar-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+}
+
+.carousel-strip { display: flex; flex-direction: column; gap: 7px; max-height: 430px; overflow-y: auto; }
+
+.strip-thumb {
+  overflow: hidden;
+  border: 1.5px solid var(--border-soft);
+  cursor: pointer; transition: all .12s; flex-shrink: 0; position: relative;
+  aspect-ratio: 1;
+}
+.strip-thumb:hover { border-color: var(--border); transform: translate(-1px,-1px); box-shadow: 2px 2px 0 var(--border); }
+.strip-thumb.active-slide { border-color: var(--orange); box-shadow: 2px 2px 0 var(--orange); }
+.strip-thumb canvas { width: 100%; height: 100%; display: block; }
+.strip-label {
+  position: absolute; bottom: 5px; left: 6px;
+  font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.6); padding: 2px 5px;
+}
+
+.modal-footer {
+  padding: 16px 28px;
+  border-top: 1.5px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; background: var(--bg-card);
+}
+.modal-footer-left  { display: flex; gap: 8px; }
+.modal-footer-right { display: flex; gap: 8px; align-items: center; }
+
+.btn-outline {
+  padding: 8px 16px;
+  font-size: 12px; font-weight: 600;
+  background: transparent;
+  border: 1.5px solid var(--border-soft);
+  color: var(--text-2);
+  cursor: pointer; transition: all .12s;
+}
+.btn-outline:hover { border-color: var(--border); color: var(--text); box-shadow: var(--shadow-btn); transform: translate(-1px,-1px); }
+
+.schedule-time-input {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-soft);
+  padding: 8px 10px; color: var(--text);
+  font-size: 12px; width: 168px;
+  transition: border-color .12s;
+}
+.schedule-time-input:focus { border-color: var(--orange); }
+
+.btn-schedule {
+  padding: 9px 22px;
+  font-family: var(--font-head);
+  font-size: 13px; font-weight: 800;
+  background: var(--text); color: var(--bg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
+  cursor: pointer; transition: all .12s; white-space: nowrap;
+  letter-spacing: 0.2px;
+}
+.btn-schedule:hover {
+  background: var(--orange); border-color: var(--orange); color: #fff;
+  transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--border);
+}
+
+/* ══════════════════════════════════════════
+   SHIMMER (loading)
+══════════════════════════════════════════ */
+.shimmer {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-chip) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border: 1.5px solid var(--border-soft);
+  box-shadow: var(--shadow-card);
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ══════════════════════════════════════════
+   TOASTS
+══════════════════════════════════════════ */
+.toast-container {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 7px; align-items: flex-end;
+}
+.toast {
+  padding: 10px 16px;
+  font-size: 12px; font-weight: 600;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-card);
+  color: var(--text);
+  transform: translateX(120%); transition: transform .28s;
+  display: flex; align-items: center; gap: 8px; max-width: 300px;
+}
+.toast.show { transform: translateX(0); }
+.toast.success { border-left: 4px solid #22c55e; }
+.toast.info    { border-left: 4px solid var(--orange); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 1080px) { .panel-schedule { width: 220px; } }
+@media (max-width: 880px)  { .panel-schedule { display: none; } }
+
 </style>
 </head>
+
 <body>
 
-<!-- ─── TOP BAR ─── -->
+<!-- ═══════════════ TOP BAR ═══════════════ -->
 <header class="topbar">
   <div class="topbar-brand">
     <div class="topbar-logo">G</div>
     <div class="topbar-name">Gen <span>Social</span></div>
   </div>
+
   <div class="topbar-pills">
-    <button class="pill active" onclick="setView('carousel')">Carousel</button>
-    <button class="pill" onclick="setView('story')">Story</button>
-    <button class="pill" onclick="setView('reel')">Reel</button>
+    <button class="pill active" onclick="setView(this,'carousel')">Carousel</button>
+    <button class="pill" onclick="setView(this,'story')">Story</button>
+    <button class="pill" onclick="setView(this,'reel')">Reel</button>
   </div>
-  <div class="topbar-actions">
-    <button class="btn-sm">↑ Export All</button>
+
+  <div class="topbar-right">
+    <button class="btn-ghost">↑ Export All</button>
     <button class="btn-primary" onclick="openScheduleAll()">Schedule All →</button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀</button>
     <div class="avatar">A</div>
   </div>
 </header>
 
-<!-- ─── MAIN ─── -->
+<!-- ═══════════════ MAIN ═══════════════ -->
 <div class="main">
 
   <!-- ═══ LEFT: BRAND KIT ═══ -->
   <aside class="panel-brand" id="brandPanel">
     <div class="panel-header">
-      <div class="panel-title">Brand Kit</div>
+      <div class="panel-label">Brand Kit</div>
       <div class="brand-url-row">
         <input type="text" class="brand-url-input" id="brandUrlInput"
           placeholder="paste website URL…" value="https://allbirds.com">
@@ -590,163 +960,105 @@
       </div>
     </div>
 
-    <!-- Colors -->
+    <!-- Colours -->
     <div class="brand-section">
-      <div class="section-label">
-        Colours
-        <button class="section-edit-btn" onclick="resetColors()">Reset</button>
+      <div class="section-row">
+        <span class="section-label">Colours</span>
+        <button class="section-action" onclick="resetColors()">Reset</button>
       </div>
-      <div class="color-swatches" id="colorSwatches">
-        <div class="swatch-wrap" onclick="selectColor(this, '#1a1a2e')">
-          <div class="swatch selected" style="background:#1a1a2e" title="#1a1a2e"></div>
-          <span class="swatch-label">#1a1a2e</span>
-        </div>
-        <div class="swatch-wrap" onclick="selectColor(this, '#f5f0eb')">
-          <div class="swatch" style="background:#f5f0eb" title="#f5f0eb"></div>
-          <span class="swatch-label">#f5f0eb</span>
-        </div>
-        <div class="swatch-wrap" onclick="selectColor(this, '#9b7543')">
-          <div class="swatch" style="background:#9b7543" title="#9b7543"></div>
-          <span class="swatch-label">#9b7543</span>
-        </div>
-        <div class="swatch-wrap" onclick="selectColor(this, '#c5e3c5')">
-          <div class="swatch" style="background:#c5e3c5" title="#c5e3c5"></div>
-          <span class="swatch-label">#c5e3c5</span>
-        </div>
-        <div class="swatch-wrap" onclick="selectColor(this, '#e8d5b0')">
-          <div class="swatch" style="background:#e8d5b0" title="#e8d5b0"></div>
-          <span class="swatch-label">#e8d5b0</span>
-        </div>
-        <div class="swatch-add" onclick="addColor()" title="Add colour">+</div>
-      </div>
+      <div class="color-swatches" id="colorSwatches"></div>
     </div>
 
-    <!-- Fonts -->
+    <!-- Typography -->
     <div class="brand-section">
-      <div class="section-label">
-        Typography
-        <button class="section-edit-btn" onclick="uploadFont()">+ Upload</button>
+      <div class="section-row">
+        <span class="section-label">Typography</span>
+        <button class="section-action" onclick="uploadFont()">+ Upload</button>
       </div>
-      <div class="font-row" id="fontList">
-        <div class="font-item active" onclick="selectFont(this, 'Georgia')">
-          <div class="font-meta">
-            <span class="font-name">Georgia</span>
-            <span class="font-role">Heading</span>
-          </div>
-          <span class="font-preview" style="font-family:Georgia">Aa</span>
-        </div>
-        <div class="font-item" onclick="selectFont(this, 'Inter')">
-          <div class="font-meta">
-            <span class="font-name">Inter</span>
-            <span class="font-role">Body</span>
-          </div>
-          <span class="font-preview" style="font-family:Inter">Aa</span>
-        </div>
-        <div class="font-item" onclick="selectFont(this, 'monospace')">
-          <div class="font-meta">
-            <span class="font-name">Mono</span>
-            <span class="font-role">Accent</span>
-          </div>
-          <span class="font-preview" style="font-family:monospace">Aa</span>
-        </div>
-      </div>
+      <div class="font-list" id="fontList"></div>
     </div>
 
     <!-- Vibe -->
     <div class="brand-section">
-      <div class="section-label">Vibe</div>
-      <div class="vibe-tags" id="vibeTags">
-        <span class="vibe-tag active" onclick="toggleVibe(this)">Minimal</span>
-        <span class="vibe-tag active" onclick="toggleVibe(this)">Sustainable</span>
-        <span class="vibe-tag" onclick="toggleVibe(this)">Luxury</span>
-        <span class="vibe-tag active" onclick="toggleVibe(this)">Natural</span>
-        <span class="vibe-tag" onclick="toggleVibe(this)">Bold</span>
-        <span class="vibe-tag" onclick="toggleVibe(this)">Playful</span>
-        <span class="vibe-tag" onclick="toggleVibe(this)">Earthy</span>
-        <span class="vibe-tag" onclick="toggleVibe(this)">Tech</span>
+      <div class="section-row">
+        <span class="section-label">Vibe</span>
       </div>
+      <div class="vibe-tags" id="vibeTags"></div>
     </div>
 
-    <!-- Product Photos -->
+    <!-- Photos -->
     <div class="brand-section">
-      <div class="section-label">
-        Product Photos
+      <div class="section-row">
+        <span class="section-label">Product Photos</span>
         <span class="detected-badge">✓ 4 found</span>
       </div>
-      <div class="photos-grid" id="photosGrid">
-        <!-- Generated by JS -->
-      </div>
+      <div class="photos-grid" id="photosGrid"></div>
     </div>
-
   </aside>
 
   <!-- ═══ CENTER: POST BUILDER ═══ -->
   <section class="panel-posts">
     <div class="posts-input-area">
+      <div class="prompt-label">What are we posting?</div>
       <div class="posts-input-row">
-        <div class="post-prompt-wrap">
-          <textarea class="post-prompt" id="postPrompt" rows="3"
-            placeholder="Describe your post campaign… e.g. 'Summer sale — highlight our wool runners, focus on comfort and eco-materials, speak to conscious shoppers'"
-          >Summer collection launch — showcase our new wool runners, highlight eco-friendly materials, speak to comfort-conscious shoppers who care about sustainability</textarea>
-        </div>
-        <div class="post-controls">
+        <textarea class="post-prompt" id="postPrompt" rows="3"
+          placeholder="Describe your campaign… e.g. 'Summer launch — wool runners, eco-materials, conscious shoppers'"
+        >Summer collection launch — showcase our new wool runners, highlight eco-friendly materials, speak to comfort-conscious shoppers who care about sustainability</textarea>
+        <div class="prompt-side">
           <select class="count-select" id="countSelect">
             <option value="3">3 ideas</option>
             <option value="5" selected>5 ideas</option>
             <option value="8">8 ideas</option>
             <option value="10">10 ideas</option>
           </select>
-          <button class="btn-generate" id="generateBtn" onclick="generatePosts()">
-            ✦ Generate
-          </button>
+          <button class="btn-generate" id="generateBtn" onclick="generatePosts()">✦ Generate</button>
         </div>
       </div>
       <div class="posts-meta">
-        <span class="meta-text">Brand: <strong>Allbirds</strong></span>
+        <span class="meta-text">Brand: <strong id="brandMetaName">Allbirds</strong></span>
         <span class="meta-chip">5 slides / post</span>
-        <span class="meta-chip">1:1 ratio</span>
+        <span class="meta-chip">1 : 1</span>
         <span class="meta-chip">Instagram</span>
       </div>
     </div>
 
-    <div class="posts-list" id="postsList">
-      <!-- Populated by JS with sample content -->
-    </div>
+    <div class="posts-list" id="postsList"></div>
   </section>
 
   <!-- ═══ RIGHT: SCHEDULE ═══ -->
   <aside class="panel-schedule">
     <div class="schedule-header">
-      <div class="panel-title">Queue</div>
+      <div class="schedule-section-title">Queue</div>
     </div>
-    <div class="platform-select">
-      <div class="platform-row">
-        <button class="platform-btn active" onclick="selectPlatform(this)">Instagram</button>
-        <button class="platform-btn" onclick="selectPlatform(this)">TikTok</button>
-        <button class="platform-btn" onclick="selectPlatform(this)">LinkedIn</button>
-      </div>
+
+    <div class="platform-row">
+      <button class="platform-btn active" onclick="selectPlatform(this)">Instagram</button>
+      <button class="platform-btn" onclick="selectPlatform(this)">TikTok</button>
+      <button class="platform-btn" onclick="selectPlatform(this)">LinkedIn</button>
     </div>
+
     <div class="calendar-mini">
       <div class="cal-header">
         <span class="cal-month" id="calMonth">June 2026</span>
-        <div>
+        <div class="cal-nav-wrap">
           <button class="cal-nav" onclick="prevMonth()">‹</button>
           <button class="cal-nav" onclick="nextMonth()">›</button>
         </div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
     </div>
+
     <div class="schedule-queue" id="scheduleQueue">
       <div class="schedule-empty">
         <div class="schedule-empty-icon">📅</div>
-        <div>No posts scheduled yet.<br>Generate ideas and hit Schedule.</div>
+        No posts scheduled yet.<br>Generate ideas and hit Schedule.
       </div>
     </div>
   </aside>
 
 </div><!-- /.main -->
 
-<!-- ─── CAROUSEL MODAL ─── -->
+<!-- ═══════════════ CAROUSEL MODAL ═══════════════ -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
   <div class="modal" id="modalBox">
     <div class="modal-header">
@@ -769,31 +1081,31 @@
           </div>
         </div>
         <div class="carousel-sidebar">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">All Slides</div>
+          <div class="sidebar-label">All Slides</div>
           <div class="carousel-strip" id="carouselStrip"></div>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <div class="modal-footer-left">
-        <button class="btn-download" onclick="downloadSlide()">↓ Download PNG</button>
-        <button class="btn-download" onclick="downloadAll()">↓ All Slides</button>
+        <button class="btn-outline" onclick="downloadSlide()">↓ Download PNG</button>
+        <button class="btn-outline" onclick="downloadAll()">↓ All Slides</button>
       </div>
       <div class="modal-footer-right">
         <input type="datetime-local" class="schedule-time-input" id="scheduleTimeInput">
-        <button class="btn-schedule" onclick="schedulePost()">📅 Schedule</button>
+        <button class="btn-schedule" onclick="schedulePost()">Schedule →</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ─── TOAST CONTAINER ─── -->
+<!-- ═══════════════ TOAST ═══════════════ -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    STATE
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 const state = {
   brand: {
     name: 'Allbirds',
@@ -803,418 +1115,412 @@ const state = {
     font: 'Georgia',
     vibes: ['Minimal','Sustainable','Natural'],
     photos: [
-      { src: null, gradient: ['#9b7543','#c5b08a'], label: 'Wool Runner' },
-      { src: null, gradient: ['#4a7c59','#a8d5b5'], label: 'Tree Dasher' },
-      { src: null, gradient: ['#2c3e50','#4a6fa5'], label: 'Lounger' },
-      { src: null, gradient: ['#8b6f47','#d4a76a'], label: 'Piper' },
+      { gradient: ['#9b7543','#c5b08a'], label: 'Wool Runner' },
+      { gradient: ['#4a7c59','#a8d5b5'], label: 'Tree Dasher' },
+      { gradient: ['#2c3e50','#4a6fa5'], label: 'Lounger' },
+      { gradient: ['#8b6f47','#d4a76a'], label: 'Piper' },
     ]
   },
   posts: [],
   scheduledPosts: [],
-  modal: {
-    postIdx: null,
-    currentSlide: 0,
-    canvases: []
-  },
-  calendar: {
-    year: 2026,
-    month: 5 // 0-indexed, June
-  }
+  modal: { postIdx: null, currentSlide: 0 },
+  calendar: { year: 2026, month: 5 }
 };
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    SAMPLE DATA
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 const SAMPLE_POSTS = [
   {
-    id: 1,
+    id:1,
     concept: 'Step Into Summer — Introducing the Wool Runner Mist',
     tags: ['#NewArrivals','#SummerVibes','#Allbirds'],
-    caption: '☁️ Meet the Wool Runner Mist. Cool when it's warm, warm when it's cool — made from ZQ-certified merino wool so the planet feels good too.\n\nShop the Summer collection → link in bio\n\n#Allbirds #WoolRunner #SustainableStyle #ComfortFirst #EcoFashion',
+    caption: "☁️ Meet the Wool Runner Mist. Cool when it's warm, warm when it's cool — made from ZQ-certified merino wool so the planet feels good too.\n\nShop the Summer collection → link in bio\n\n#Allbirds #WoolRunner #SustainableStyle #ComfortFirst #EcoFashion",
     slides: [
-      { type: 'cover', headline: 'Step Into\nSummer', sub: 'The Wool Runner Mist', emoji: '☁️' },
-      { type: 'feature', headline: 'ZQ Merino\nWool', sub: 'Temperature-regulating, naturally', emoji: '🌿' },
-      { type: 'stat', headline: '95%', sub: 'Natural & renewable materials', emoji: '♻️' },
-      { type: 'lifestyle', headline: 'All Day\nComfort', sub: 'From coffee to coastline', emoji: '☀️' },
-      { type: 'cta', headline: 'Shop Now', sub: 'Link in bio → Allbirds.com', emoji: '👟' },
+      { type:'cover',    headline:'Step Into\nSummer',      sub:'The Wool Runner Mist',           emoji:'☁️' },
+      { type:'feature',  headline:'ZQ Merino\nWool',        sub:'Temperature-regulating, naturally',emoji:'🌿' },
+      { type:'stat',     headline:'95%',                    sub:'Natural & renewable materials',   emoji:'♻️' },
+      { type:'lifestyle',headline:'All Day\nComfort',       sub:'From coffee to coastline',        emoji:'☀️' },
+      { type:'cta',      headline:'Shop Now',               sub:'Link in bio → Allbirds.com',     emoji:'👟' },
     ],
-    status: 'ready',
-    scheduledTime: null
+    status:'ready', expanded:false, scheduledTime:null
   },
   {
-    id: 2,
-    concept: 'Why Sustainable Shoes Don\'t Mean Sacrificing Style',
+    id:2,
+    concept: "Why Sustainable Shoes Don't Mean Sacrificing Style",
     tags: ['#Sustainability','#EcoFashion','#ConsciousLiving'],
-    caption: 'You don\'t have to choose between looking good and doing good. 🌍\n\nAt Allbirds, we\'ve spent years proving that comfort, style, and sustainability can coexist — and the numbers back us up.\n\n#EcoConscious #SustainableFootwear #StyleWithPurpose #GreenLiving',
+    caption: "You don't have to choose between looking good and doing good. 🌍\n\nAt Allbirds, we've spent years proving that comfort, style, and sustainability can coexist — and the numbers back us up.\n\n#EcoConscious #SustainableFootwear #StyleWithPurpose #GreenLiving",
     slides: [
-      { type: 'cover', headline: 'Style\n& Conscience', sub: 'Why choose one?', emoji: '🌍' },
-      { type: 'stat', headline: '0 lbs', sub: 'Carbon per pair — our 2025 goal', emoji: '🎯' },
-      { type: 'feature', headline: 'Sugar Cane\nSoles', sub: 'SweetFoam™ — lower footprint', emoji: '🌱' },
-      { type: 'feature', headline: 'Recycled\nLaces', sub: 'Made from plastic bottles', emoji: '♻️' },
-      { type: 'cta', headline: 'Join the\nMovement', sub: 'allbirds.com/sustainability', emoji: '✊' },
+      { type:'cover',    headline:'Style\n& Conscience',    sub:'Why choose one?',                emoji:'🌍' },
+      { type:'stat',     headline:'0 lbs',                  sub:'Carbon per pair — our 2025 goal',emoji:'🎯' },
+      { type:'feature',  headline:'Sugar Cane\nSoles',      sub:'SweetFoam™ — lower footprint',   emoji:'🌱' },
+      { type:'feature',  headline:'Recycled\nLaces',        sub:'Made from plastic bottles',      emoji:'♻️' },
+      { type:'cta',      headline:'Join the\nMovement',     sub:'allbirds.com/sustainability',    emoji:'✊' },
     ],
-    status: 'ready',
-    scheduledTime: null
+    status:'ready', expanded:false, scheduledTime:null
   },
   {
-    id: 3,
+    id:3,
     concept: '5 Reasons Our Customers Never Go Back to Regular Sneakers',
     tags: ['#CustomerLove','#WoolRunners','#Comfort'],
-    caption: 'Once you go Allbirds, there\'s no going back. 😅\n\nHere\'s what our community keeps telling us — over and over again. Swipe to see why 60M+ pairs have been sold worldwide.\n\n#HonestReview #AllbirdsLife #ComfortIsCool',
+    caption: "Once you go Allbirds, there's no going back. 😅\n\nHere's what our community keeps telling us — over and over again. Swipe to see why 60M+ pairs have been sold worldwide.\n\n#HonestReview #AllbirdsLife #ComfortIsCool",
     slides: [
-      { type: 'cover', headline: '5 Reasons\nYou\'ll Never', sub: 'Go back to regular sneakers', emoji: '🤯' },
-      { type: 'feature', headline: 'No Break-In\nPeriod', sub: 'Soft from step one', emoji: '🚀' },
-      { type: 'feature', headline: 'Machine\nWashable', sub: 'Throw them in, come out fresh', emoji: '🫧' },
-      { type: 'stat', headline: '4.8★', sub: 'Average across 100k reviews', emoji: '⭐' },
-      { type: 'cta', headline: 'Try Yours', sub: 'Free returns — always', emoji: '🎁' },
+      { type:'cover',    headline:"5 Reasons\nYou'll Never",sub:'Go back to regular sneakers',    emoji:'🤯' },
+      { type:'feature',  headline:'No Break-In\nPeriod',    sub:'Soft from step one',             emoji:'🚀' },
+      { type:'feature',  headline:'Machine\nWashable',      sub:'Throw them in, come out fresh',  emoji:'🫧' },
+      { type:'stat',     headline:'4.8★',                   sub:'Average across 100k reviews',    emoji:'⭐' },
+      { type:'cta',      headline:'Try Yours',              sub:'Free returns — always',          emoji:'🎁' },
     ],
-    status: 'ready',
-    scheduledTime: null
+    status:'ready', expanded:false, scheduledTime:null
   },
   {
-    id: 4,
+    id:4,
     concept: 'Behind the Shoe: How We Turn Wool into Your Favourite Sneaker',
     tags: ['#BehindTheScenes','#HowItsMade','#Transparency'],
-    caption: 'From New Zealand merino farms to your doorstep — here\'s how your Allbirds are born. 🐑→👟\n\nWe believe in radical transparency about how our products are made. Swipe to see the journey.\n\n#BTS #HowItsMade #FarmToFoot #Allbirds',
+    caption: "From New Zealand merino farms to your doorstep — here's how your Allbirds are born. 🐑→👟\n\nWe believe in radical transparency. Swipe to see the journey.\n\n#BTS #HowItsMade #FarmToFoot #Allbirds",
     slides: [
-      { type: 'cover', headline: 'From Farm\nto Foot', sub: 'How your Allbirds are born', emoji: '🐑' },
-      { type: 'feature', headline: 'New Zealand\nFarms', sub: 'ZQ-certified ethical sourcing', emoji: '🌏' },
-      { type: 'feature', headline: 'Natural\nDyeing', sub: 'Lower water, no harsh chemicals', emoji: '🎨' },
-      { type: 'feature', headline: 'Responsible\nFactory', sub: 'Fair wages, safe conditions', emoji: '🏭' },
-      { type: 'cta', headline: 'Learn More', sub: 'Our full impact report is live', emoji: '📋' },
+      { type:'cover',    headline:'From Farm\nto Foot',     sub:'How your Allbirds are born',     emoji:'🐑' },
+      { type:'feature',  headline:'New Zealand\nFarms',     sub:'ZQ-certified ethical sourcing',   emoji:'🌏' },
+      { type:'feature',  headline:'Natural\nDyeing',        sub:'Lower water, no harsh chemicals', emoji:'🎨' },
+      { type:'feature',  headline:'Responsible\nFactory',   sub:'Fair wages, safe conditions',    emoji:'🏭' },
+      { type:'cta',      headline:'Learn More',             sub:'Our full impact report is live', emoji:'📋' },
     ],
-    status: 'pending',
-    scheduledTime: null
+    status:'pending', expanded:false, scheduledTime:null
   },
   {
-    id: 5,
+    id:5,
     concept: 'Morning Ritual: How Our Shoes Fit Into Every Part of Your Day',
     tags: ['#DayInTheLife','#LifestyleContent','#AllbirdsEveryDay'],
-    caption: 'From the first coffee to the last stretch — your Allbirds were made for the whole day. 🌅\n\nTagging us in your daily moments is the highlight of our feed. Keep them coming. 📸\n\n#GRWM #DailyEssentials #AllbirdsLife #ComfortableStyle',
+    caption: "From the first coffee to the last stretch — your Allbirds were made for the whole day. 🌅\n\nTagging us in your daily moments is the highlight of our feed. 📸\n\n#GRWM #DailyEssentials #AllbirdsLife #ComfortableStyle",
     slides: [
-      { type: 'cover', headline: 'Your Day,\nYour Birds', sub: 'Morning to midnight', emoji: '🌅' },
-      { type: 'lifestyle', headline: 'Morning\nCoffee Run', sub: 'Brunch is always better comfortable', emoji: '☕' },
-      { type: 'lifestyle', headline: 'Work From\nAnywhere', sub: 'Supportive enough for long days', emoji: '💻' },
-      { type: 'lifestyle', headline: 'Golden Hour\nWalk', sub: 'Built for the detour', emoji: '🌇' },
-      { type: 'cta', headline: 'Tag Us\n#AllbirdsLife', sub: 'We feature our favourites', emoji: '📸' },
+      { type:'cover',    headline:'Your Day,\nYour Birds',  sub:'Morning to midnight',             emoji:'🌅' },
+      { type:'lifestyle',headline:'Morning\nCoffee Run',    sub:'Brunch is always better comfortable',emoji:'☕' },
+      { type:'lifestyle',headline:'Work From\nAnywhere',    sub:'Supportive enough for long days', emoji:'💻' },
+      { type:'lifestyle',headline:'Golden Hour\nWalk',      sub:'Built for the detour',           emoji:'🌇' },
+      { type:'cta',      headline:'Tag Us\n#AllbirdsLife',  sub:'We feature our favourites',      emoji:'📸' },
     ],
-    status: 'ready',
-    scheduledTime: null
+    status:'ready', expanded:false, scheduledTime:null
   }
 ];
 
-/* ════════════════════════════════════════════════════════
-   CANVAS DRAWING
-════════════════════════════════════════════════════════ */
-const SLIDE_DESIGNS = {
-  cover: (ctx, w, h, brand, slide) => {
-    // Rich gradient background
-    const grad = ctx.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, brand.primaryColor);
-    grad.addColorStop(1, shiftColor(brand.primaryColor, 40));
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
+/* ════════════════════════════════════════════════════
+   CANVAS — SLIDE RENDERING
+   Design language: bold editorial, paper warmth,
+   black / off-white / orange accent only.
+════════════════════════════════════════════════════ */
 
-    // Decorative circle
-    ctx.save();
-    ctx.globalAlpha = 0.1;
-    ctx.beginPath();
-    ctx.arc(w * 0.75, h * 0.25, h * 0.45, 0, Math.PI * 2);
-    ctx.fillStyle = brand.accentColor;
-    ctx.fill();
-    ctx.restore();
+const ORANGE = '#F04E00';
+const CREAM  = '#F6F2EC';
+const BLACK  = '#111111';
+const WHITE  = '#FDFAF6';
 
-    // Subtle grid lines
-    ctx.save();
-    ctx.globalAlpha = 0.05;
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < w; i += 40) {
-      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
-    }
-    ctx.restore();
-
-    // Logo chip
-    drawChip(ctx, 24, 24, brand.name, brand.accentColor);
-
-    // Emoji
-    ctx.font = `${w * 0.13}px serif`;
-    ctx.textAlign = 'left';
-    ctx.fillText(slide.emoji, 24, h * 0.48);
-
-    // Headline
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${w * 0.11}px ${brand.font}`;
-    ctx.textAlign = 'left';
-    const headLines = slide.headline.split('\n');
-    headLines.forEach((ln, i) => ctx.fillText(ln, 24, h * 0.56 + i * w * 0.12));
-
-    // Sub
-    ctx.fillStyle = hexToRgba(brand.accentColor, 0.9);
-    ctx.font = `${w * 0.055}px ${brand.font}`;
-    ctx.fillText(slide.sub, 24, h * 0.82);
-
-    // Slide dot indicator
-    drawDots(ctx, w, h, 0, 5, brand.accentColor);
-  },
-
-  feature: (ctx, w, h, brand, slide, idx) => {
-    ctx.fillStyle = brand.bgColor;
-    ctx.fillRect(0, 0, w, h);
-
-    // Accent bar
-    ctx.fillStyle = brand.accentColor;
-    ctx.fillRect(0, 0, 6, h);
-
-    // Large emoji
-    ctx.font = `${w * 0.18}px serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText(slide.emoji, w * 0.5, h * 0.38);
-
-    // Headline
-    ctx.fillStyle = brand.primaryColor;
-    ctx.font = `bold ${w * 0.1}px ${brand.font}`;
-    const lines = slide.headline.split('\n');
-    lines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, h * 0.5 + i * w * 0.11));
-
-    // Sub
-    ctx.fillStyle = hexToRgba(brand.primaryColor, 0.55);
-    ctx.font = `${w * 0.052}px ${brand.font}`;
-    ctx.fillText(slide.sub, w * 0.5, h * 0.73);
-
-    drawChip(ctx, 24, 24, brand.name, brand.primaryColor);
-    drawDots(ctx, w, h, idx, 5, brand.accentColor);
-  },
-
-  stat: (ctx, w, h, brand, slide, idx) => {
-    const grad = ctx.createLinearGradient(0, 0, w, h);
-    grad.addColorStop(0, brand.accentColor);
-    grad.addColorStop(1, shiftColor(brand.accentColor, -30));
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-
-    // Big stat
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${w * 0.22}px ${brand.font}`;
-    ctx.textAlign = 'center';
-    ctx.fillText(slide.headline, w * 0.5, h * 0.5);
-
-    // Underline
-    ctx.fillStyle = hexToRgba('#fff', 0.3);
-    ctx.fillRect(w * 0.2, h * 0.54, w * 0.6, 2);
-
-    // Sub
-    ctx.fillStyle = hexToRgba('#fff', 0.85);
-    ctx.font = `${w * 0.055}px ${brand.font}`;
-    ctx.fillText(slide.sub, w * 0.5, h * 0.66);
-
-    // Emoji in corner
-    ctx.font = `${w * 0.1}px serif`;
-    ctx.textAlign = 'right';
-    ctx.fillText(slide.emoji, w - 20, 50);
-
-    ctx.textAlign = 'left';
-    drawChip(ctx, 24, 24, brand.name, '#fff', brand.accentColor);
-    drawDots(ctx, w, h, idx, 5, '#fff');
-  },
-
-  lifestyle: (ctx, w, h, brand, slide, idx) => {
-    // Deep scene
-    const grad = ctx.createRadialGradient(w * 0.3, h * 0.3, 0, w * 0.5, h * 0.5, h * 0.8);
-    grad.addColorStop(0, shiftColor(brand.primaryColor, 30));
-    grad.addColorStop(1, brand.primaryColor);
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-
-    // Texture overlay
-    for (let i = 0; i < 200; i++) {
-      ctx.save();
-      ctx.globalAlpha = 0.03;
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(Math.random() * w, Math.random() * h, Math.random() * 2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // Bottom text block
-    ctx.save();
-    const textGrad = ctx.createLinearGradient(0, h * 0.6, 0, h);
-    textGrad.addColorStop(0, 'rgba(0,0,0,0)');
-    textGrad.addColorStop(1, 'rgba(0,0,0,0.8)');
-    ctx.fillStyle = textGrad;
-    ctx.fillRect(0, 0, w, h);
-    ctx.restore();
-
-    // Emoji
-    ctx.font = `${w * 0.13}px serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText(slide.emoji, w * 0.5, h * 0.45);
-
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${w * 0.1}px ${brand.font}`;
-    const lines = slide.headline.split('\n');
-    lines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, h * 0.62 + i * w * 0.11));
-
-    ctx.fillStyle = hexToRgba(brand.accentColor, 0.9);
-    ctx.font = `${w * 0.05}px ${brand.font}`;
-    ctx.fillText(slide.sub, w * 0.5, h * 0.84);
-
-    ctx.textAlign = 'left';
-    drawChip(ctx, 24, 24, brand.name, '#fff');
-    drawDots(ctx, w, h, idx, 5, '#fff');
-  },
-
-  cta: (ctx, w, h, brand, slide, idx) => {
-    ctx.fillStyle = brand.bgColor;
-    ctx.fillRect(0, 0, w, h);
-
-    // Bold accent corner
-    ctx.save();
-    ctx.fillStyle = brand.accentColor;
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(w * 0.5, 0); ctx.lineTo(0, h * 0.5);
-    ctx.fill();
-    ctx.restore();
-
-    // Emoji
-    ctx.font = `${w * 0.15}px serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText(slide.emoji, w * 0.5, h * 0.42);
-
-    ctx.fillStyle = brand.primaryColor;
-    ctx.font = `bold ${w * 0.12}px ${brand.font}`;
-    const lines = slide.headline.split('\n');
-    lines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, h * 0.57 + i * w * 0.13));
-
-    // CTA button
-    const bx = w * 0.2, by = h * 0.76, bw = w * 0.6, bh = h * 0.08;
-    ctx.fillStyle = brand.primaryColor;
-    roundRect(ctx, bx, by, bw, bh, 8);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${w * 0.048}px ${brand.font}`;
-    ctx.fillText(slide.sub, w * 0.5, by + bh * 0.65);
-
-    ctx.textAlign = 'left';
-    drawChip(ctx, 24, 24, brand.name, brand.primaryColor);
-    drawDots(ctx, w, h, idx, 5, brand.accentColor);
-  }
-};
-
-function drawChip(ctx, x, y, label, bgColor, textColor) {
-  const tc = textColor || '#fff';
-  ctx.save();
-  ctx.font = 'bold 11px Inter, sans-serif';
-  const tw = ctx.measureText(label).width;
-  const pw = 12, ph = 6, r = 5;
-  const rw = tw + pw * 2, rh = 22;
-  ctx.fillStyle = bgColor;
-  ctx.globalAlpha = 0.85;
-  roundRect(ctx, x, y, rw, rh, r);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = tc;
-  ctx.fillText(label, x + pw, y + rh * 0.68);
-  ctx.restore();
-}
-
-function drawDots(ctx, w, h, active, total, color) {
-  const dotR = 3, gap = 10;
-  const totalW = total * dotR * 2 + (total - 1) * gap;
-  const startX = (w - totalW) / 2;
-  const y = h - 18;
-  for (let i = 0; i < total; i++) {
-    ctx.beginPath();
-    ctx.arc(startX + i * (dotR * 2 + gap) + dotR, y, i === active ? dotR + 1 : dotR - 1, 0, Math.PI * 2);
-    ctx.fillStyle = i === active ? color : hexToRgba(color, 0.35);
-    ctx.fill();
-  }
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-function drawSlide(canvas, slideData, idx, brand) {
+function drawSlide(canvas, slide, idx, brand) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
-  const fn = SLIDE_DESIGNS[slideData.type] || SLIDE_DESIGNS.feature;
-  fn(ctx, w, h, brand, slideData, idx);
+
+  const designs = {
+    cover:     drawCoverSlide,
+    feature:   drawFeatureSlide,
+    stat:      drawStatSlide,
+    lifestyle: drawLifestyleSlide,
+    cta:       drawCtaSlide
+  };
+  (designs[slide.type] || drawFeatureSlide)(ctx, w, h, slide, idx, brand);
 }
 
+/* Dotted texture helper */
+function drawDotTexture(ctx, w, h, color, spacing=18) {
+  ctx.save();
+  ctx.fillStyle = color;
+  for (let x = spacing; x < w; x += spacing) {
+    for (let y = spacing; y < h; y += spacing) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+/* Shared slide chrome */
+function drawBrandTag(ctx, x, y, name) {
+  ctx.save();
+  ctx.font = `700 10px Inter, sans-serif`;
+  const tw = ctx.measureText(name).width;
+  const pw = 10, ph = 5, rh = 20;
+  ctx.fillStyle = ORANGE;
+  ctx.fillRect(x, y, tw + pw*2, rh);
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'left';
+  ctx.fillText(name, x + pw, y + rh * 0.68);
+  ctx.restore();
+}
+
+function drawSlideNumber(ctx, w, h, idx, total) {
+  ctx.save();
+  ctx.font = `600 10px Inter, sans-serif`;
+  ctx.fillStyle = hexToRgba(BLACK, 0.4);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1} / ${total}`, w - 16, h - 14);
+  ctx.restore();
+}
+
+function drawNavDots(ctx, w, h, idx, total, color) {
+  const r = 3, gap = 8;
+  const total_w = total * r*2 + (total-1)*gap;
+  const sx = (w - total_w) / 2;
+  const y = h - 16;
+  for (let i = 0; i < total; i++) {
+    ctx.beginPath();
+    ctx.arc(sx + i*(r*2+gap) + r, y, i===idx ? r+1 : r-1, 0, Math.PI*2);
+    ctx.fillStyle = i===idx ? color : hexToRgba(color, 0.3);
+    ctx.fill();
+  }
+}
+
+/* COVER — dark background, big headline, orange rule */
+function drawCoverSlide(ctx, w, h, slide, idx, brand) {
+  /* bg */
+  ctx.fillStyle = BLACK;
+  ctx.fillRect(0, 0, w, h);
+  drawDotTexture(ctx, w, h, 'rgba(255,255,255,0.04)');
+
+  /* orange accent strip */
+  ctx.fillStyle = ORANGE;
+  ctx.fillRect(0, h * 0.46, w, 5);
+
+  /* emoji */
+  ctx.font = `${w * 0.14}px serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText(slide.emoji, w * 0.07, h * 0.34);
+
+  /* headline */
+  ctx.fillStyle = WHITE;
+  ctx.font = `800 ${w * 0.12}px Syne, Arial Black, sans-serif`;
+  slide.headline.split('\n').forEach((ln, i) =>
+    ctx.fillText(ln, w * 0.07, h * 0.5 + i * w * 0.13)
+  );
+
+  /* sub */
+  ctx.fillStyle = hexToRgba(WHITE, 0.5);
+  ctx.font = `500 ${w * 0.052}px Inter, sans-serif`;
+  ctx.fillText(slide.sub, w * 0.07, h * 0.78);
+
+  drawBrandTag(ctx, w * 0.07, h * 0.07, brand.name);
+  drawNavDots(ctx, w, h, idx, 5, ORANGE);
+}
+
+/* FEATURE — cream bg, big emoji, bold text, left orange bar */
+function drawFeatureSlide(ctx, w, h, slide, idx, brand) {
+  ctx.fillStyle = CREAM;
+  ctx.fillRect(0, 0, w, h);
+  drawDotTexture(ctx, w, h, 'rgba(0,0,0,0.05)');
+
+  /* left bar */
+  ctx.fillStyle = ORANGE;
+  ctx.fillRect(0, 0, 5, h);
+
+  /* hard shadow box in upper right */
+  const bx = w * 0.62, by = w * 0.05, bsz = w * 0.25;
+  ctx.fillStyle = hexToRgba(BLACK, 0.06);
+  ctx.fillRect(bx + 4, by + 4, bsz, bsz);
+  ctx.fillStyle = WHITE;
+  ctx.fillRect(bx, by, bsz, bsz);
+  ctx.strokeStyle = hexToRgba(BLACK, 0.12);
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(bx, by, bsz, bsz);
+  ctx.font = `${bsz * 0.55}px serif`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = BLACK;
+  ctx.fillText(slide.emoji, bx + bsz * 0.5, by + bsz * 0.72);
+
+  /* headline */
+  ctx.fillStyle = BLACK;
+  ctx.font = `800 ${w * 0.105}px Syne, Arial Black, sans-serif`;
+  ctx.textAlign = 'left';
+  slide.headline.split('\n').forEach((ln, i) =>
+    ctx.fillText(ln, w * 0.08, h * 0.46 + i * w * 0.115)
+  );
+
+  /* sub */
+  ctx.fillStyle = hexToRgba(BLACK, 0.45);
+  ctx.font = `500 ${w * 0.05}px Inter, sans-serif`;
+  ctx.fillText(slide.sub, w * 0.08, h * 0.74);
+
+  drawBrandTag(ctx, w * 0.08, h * 0.85, brand.name);
+  drawSlideNumber(ctx, w, h, idx, 5);
+}
+
+/* STAT — orange background, huge number */
+function drawStatSlide(ctx, w, h, slide, idx, brand) {
+  ctx.fillStyle = ORANGE;
+  ctx.fillRect(0, 0, w, h);
+  drawDotTexture(ctx, w, h, 'rgba(0,0,0,0.08)');
+
+  /* stat */
+  ctx.fillStyle = WHITE;
+  ctx.font = `800 ${w * 0.26}px Syne, Arial Black, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText(slide.headline, w * 0.5, h * 0.52);
+
+  /* rule */
+  ctx.fillStyle = hexToRgba(WHITE, 0.35);
+  ctx.fillRect(w * 0.12, h * 0.57, w * 0.76, 2);
+
+  /* sub */
+  ctx.fillStyle = hexToRgba(WHITE, 0.85);
+  ctx.font = `500 ${w * 0.054}px Inter, sans-serif`;
+  ctx.fillText(slide.sub, w * 0.5, h * 0.68);
+
+  /* emoji corner */
+  ctx.font = `${w * 0.09}px serif`;
+  ctx.textAlign = 'right';
+  ctx.fillStyle = hexToRgba(WHITE, 0.7);
+  ctx.fillText(slide.emoji, w - 20, 46);
+
+  ctx.textAlign = 'left';
+  drawBrandTag(ctx, 20, 20, brand.name);
+  drawNavDots(ctx, w, h, idx, 5, WHITE);
+}
+
+/* LIFESTYLE — dark with grain, text at bottom */
+function drawLifestyleSlide(ctx, w, h, slide, idx, brand) {
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, w, h);
+  drawDotTexture(ctx, w, h, 'rgba(255,255,255,0.035)', 14);
+
+  /* subtle orange corner accent */
+  ctx.save();
+  ctx.fillStyle = ORANGE;
+  ctx.globalAlpha = 0.15;
+  ctx.beginPath();
+  ctx.arc(w, 0, w * 0.55, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  /* bottom text gradient */
+  const grad = ctx.createLinearGradient(0, h*0.5, 0, h);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  /* emoji */
+  ctx.font = `${w * 0.15}px serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText(slide.emoji, w * 0.5, h * 0.46);
+
+  /* headline */
+  ctx.fillStyle = WHITE;
+  ctx.font = `800 ${w * 0.1}px Syne, Arial Black, sans-serif`;
+  slide.headline.split('\n').forEach((ln, i) =>
+    ctx.fillText(ln, w * 0.5, h * 0.63 + i * w * 0.115)
+  );
+
+  /* sub */
+  ctx.fillStyle = ORANGE;
+  ctx.font = `500 ${w * 0.048}px Inter, sans-serif`;
+  ctx.fillText(slide.sub, w * 0.5, h * 0.85);
+
+  ctx.textAlign = 'left';
+  drawBrandTag(ctx, 20, 20, brand.name);
+  drawSlideNumber(ctx, w, h, idx, 5);
+}
+
+/* CTA — cream, orange box with invite */
+function drawCtaSlide(ctx, w, h, slide, idx, brand) {
+  ctx.fillStyle = CREAM;
+  ctx.fillRect(0, 0, w, h);
+  drawDotTexture(ctx, w, h, 'rgba(0,0,0,0.05)');
+
+  /* big orange block offset */
+  const bx = w * 0.06, by = h * 0.38, bw2 = w * 0.88, bh2 = h * 0.32;
+  ctx.fillStyle = BLACK;
+  ctx.fillRect(bx+5, by+5, bw2, bh2);
+  ctx.fillStyle = ORANGE;
+  ctx.fillRect(bx, by, bw2, bh2);
+
+  /* headline inside block */
+  ctx.fillStyle = WHITE;
+  ctx.font = `800 ${w * 0.1}px Syne, Arial Black, sans-serif`;
+  ctx.textAlign = 'center';
+  slide.headline.split('\n').forEach((ln, i) =>
+    ctx.fillText(ln, w * 0.5, by + bh2 * 0.38 + i * w * 0.105)
+  );
+
+  /* emoji above */
+  ctx.font = `${w * 0.14}px serif`;
+  ctx.fillText(slide.emoji, w * 0.5, h * 0.3);
+
+  /* sub below block */
+  ctx.fillStyle = hexToRgba(BLACK, 0.5);
+  ctx.font = `500 ${w * 0.048}px Inter, sans-serif`;
+  ctx.fillText(slide.sub, w * 0.5, by + bh2 + 26);
+
+  ctx.textAlign = 'left';
+  drawBrandTag(ctx, w * 0.06, h * 0.06, brand.name);
+  drawSlideNumber(ctx, w, h, idx, 5);
+}
+
+/* ════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════ */
 function hexToRgba(hex, a) {
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
 }
-
-function shiftColor(hex, amount) {
-  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-  r = Math.max(0, Math.min(255, r + amount));
-  g = Math.max(0, Math.min(255, g + amount));
-  b = Math.max(0, Math.min(255, b + amount));
+function shiftColor(hex, amt) {
+  let r = Math.max(0,Math.min(255,parseInt(hex.slice(1,3),16)+amt));
+  let g = Math.max(0,Math.min(255,parseInt(hex.slice(3,5),16)+amt));
+  let b = Math.max(0,Math.min(255,parseInt(hex.slice(5,7),16)+amt));
   return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
 }
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    RENDER POSTS
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 function renderPosts() {
   const list = document.getElementById('postsList');
   list.innerHTML = '';
   state.posts.forEach((post, pi) => {
     const card = document.createElement('div');
-    card.className = 'post-card' + (post.expanded ? ' expanded' : '');
-    card.id = `post-card-${pi}`;
+    card.className = `post-card${post.expanded ? ' expanded' : ''}`;
     card.innerHTML = `
       <div class="post-card-header" onclick="togglePost(${pi})">
-        <div class="post-num">${pi + 1}</div>
+        <div class="post-num">${pi+1}</div>
         <div class="post-info">
           <div class="post-concept">${post.concept}</div>
-          <div class="post-tags">
-            ${post.tags.map(t => `<span class="post-tag">${t}</span>`).join('')}
-          </div>
+          <div class="post-tags">${post.tags.map(t=>`<span class="post-tag">${t}</span>`).join('')}</div>
         </div>
         <div class="post-card-actions" onclick="event.stopPropagation()">
           <button class="btn-icon" title="Duplicate" onclick="duplicatePost(${pi})">⧉</button>
           <button class="btn-icon" title="Delete" onclick="deletePost(${pi})">✕</button>
           <button class="btn-make-images" onclick="makeImages(${pi})">✦ Make Images</button>
         </div>
-      </div>
-    `;
+      </div>`;
+
     if (post.expanded) {
       const body = document.createElement('div');
       body.className = 'post-body';
       body.innerHTML = `
-        <div class="post-caption-wrap">
+        <div class="post-body-inner">
           <div class="caption-label">Caption</div>
-          <textarea class="caption-textarea" rows="4" id="caption-${pi}" oninput="updateCaption(${pi}, this.value)">${post.caption}</textarea>
+          <textarea class="caption-textarea" rows="4" id="caption-${pi}"
+            oninput="updateCaption(${pi},this.value)">${post.caption}</textarea>
           <div class="caption-count" id="count-${pi}">${post.caption.length} / 2200</div>
-        </div>
-        <div class="caption-label" style="margin-bottom:6px">Slide Previews</div>
-        <div class="slides-preview-row" id="slides-row-${pi}"></div>
-        <div class="post-footer">
-          <div class="status-row">
-            <div class="status-dot ${post.status}"></div>
-            <span>${post.status === 'ready' ? 'Images ready' : 'Generating images…'}</span>
+          <div class="caption-label" style="margin-top:14px">Slide Previews</div>
+          <div class="slides-preview-row" id="slides-row-${pi}"></div>
+          <div class="post-footer">
+            <div class="status-row">
+              <div class="status-dot ${post.status}"></div>
+              <span>${post.status === 'ready' ? 'Images ready' : 'Generating…'}</span>
+            </div>
+            <button class="btn-open-big" onclick="openModal(${pi})">⤢ Full View</button>
           </div>
-          <button class="btn-open-big" onclick="openModal(${pi})">⤢ Open Full View</button>
-        </div>
-      `;
+        </div>`;
       card.appendChild(body);
 
-      // Render slide thumbs after append
       setTimeout(() => {
         const row = document.getElementById(`slides-row-${pi}`);
         if (!row) return;
@@ -1226,7 +1532,7 @@ function renderPosts() {
           wrap.appendChild(c);
           const num = document.createElement('div');
           num.className = 'slide-num';
-          num.textContent = si + 1;
+          num.textContent = si+1;
           wrap.appendChild(num);
           wrap.onclick = () => openModal(pi, si);
           row.appendChild(wrap);
@@ -1238,57 +1544,35 @@ function renderPosts() {
   });
 }
 
-/* ════════════════════════════════════════════════════════
-   INTERACTIONS
-════════════════════════════════════════════════════════ */
 function togglePost(pi) {
   state.posts[pi].expanded = !state.posts[pi].expanded;
   renderPosts();
 }
-
 function updateCaption(pi, val) {
   state.posts[pi].caption = val;
   const cnt = document.getElementById(`count-${pi}`);
   if (cnt) cnt.textContent = `${val.length} / 2200`;
 }
-
-function deletePost(pi) {
-  state.posts.splice(pi, 1);
-  renderPosts();
-  toast('Post removed', 'info');
-}
-
+function deletePost(pi) { state.posts.splice(pi,1); renderPosts(); toast('Post removed','info'); }
 function duplicatePost(pi) {
   const copy = JSON.parse(JSON.stringify(state.posts[pi]));
-  copy.concept = 'Copy of ' + copy.concept;
-  copy.expanded = false;
-  state.posts.splice(pi + 1, 0, copy);
-  renderPosts();
-  toast('Post duplicated', 'info');
+  copy.concept = 'Copy of ' + copy.concept; copy.expanded = false;
+  state.posts.splice(pi+1, 0, copy); renderPosts(); toast('Post duplicated','info');
 }
-
 function makeImages(pi) {
-  state.posts[pi].status = 'pending';
-  state.posts[pi].expanded = true;
-  renderPosts();
-  setTimeout(() => {
-    state.posts[pi].status = 'ready';
-    renderPosts();
-    toast('Images generated! ✦', 'success');
-  }, 1800);
+  state.posts[pi].status = 'pending'; state.posts[pi].expanded = true; renderPosts();
+  setTimeout(() => { state.posts[pi].status = 'ready'; renderPosts(); toast('Images generated ✦','success'); }, 1800);
 }
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    MODAL
-════════════════════════════════════════════════════════ */
-function openModal(pi, si = 0) {
-  state.modal.postIdx = pi;
-  state.modal.currentSlide = si;
+════════════════════════════════════════════════════ */
+function openModal(pi, si=0) {
+  state.modal.postIdx = pi; state.modal.currentSlide = si;
   const post = state.posts[pi];
   document.getElementById('modalTitle').textContent = post.concept;
   document.getElementById('modalSubtitle').textContent = `${post.slides.length} slides · Instagram carousel`;
-  // Pre-fill schedule time 1 day ahead
-  const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9,0,0,0);
+  const d = new Date(); d.setDate(d.getDate()+1); d.setHours(9,0,0,0);
   document.getElementById('scheduleTimeInput').value = d.toISOString().slice(0,16);
   buildModalStrip(post);
   renderModalSlide();
@@ -1300,14 +1584,11 @@ function buildModalStrip(post) {
   strip.innerHTML = '';
   post.slides.forEach((sl, si) => {
     const wrap = document.createElement('div');
-    wrap.className = 'strip-thumb' + (si === state.modal.currentSlide ? ' active-slide' : '');
+    wrap.className = `strip-thumb${si === state.modal.currentSlide ? ' active-slide' : ''}`;
     wrap.id = `strip-${si}`;
-    const c = document.createElement('canvas');
-    c.width = 200; c.height = 200;
+    const c = document.createElement('canvas'); c.width = 200; c.height = 200;
     wrap.appendChild(c);
-    const lbl = document.createElement('div');
-    lbl.className = 'strip-label';
-    lbl.textContent = `Slide ${si + 1}`;
+    const lbl = document.createElement('div'); lbl.className = 'strip-label'; lbl.textContent = `Slide ${si+1}`;
     wrap.appendChild(lbl);
     wrap.onclick = () => { state.modal.currentSlide = si; renderModalSlide(); };
     strip.appendChild(wrap);
@@ -1318,343 +1599,206 @@ function buildModalStrip(post) {
 function renderModalSlide() {
   const post = state.posts[state.modal.postIdx];
   const si = state.modal.currentSlide;
-  const total = post.slides.length;
-  const mainC = document.getElementById('mainCanvas');
-  drawSlide(mainC, post.slides[si], si, state.brand);
-  document.getElementById('slideCounter').textContent = `${si + 1} / ${total}`;
+  drawSlide(document.getElementById('mainCanvas'), post.slides[si], si, state.brand);
+  document.getElementById('slideCounter').textContent = `${si+1} / ${post.slides.length}`;
   document.getElementById('prevSlideBtn').disabled = si === 0;
-  document.getElementById('nextSlideBtn').disabled = si === total - 1;
-  // Update strip active
-  document.querySelectorAll('.strip-thumb').forEach((el, i) => {
-    el.classList.toggle('active-slide', i === si);
-  });
+  document.getElementById('nextSlideBtn').disabled = si === post.slides.length-1;
+  document.querySelectorAll('.strip-thumb').forEach((el,i) => el.classList.toggle('active-slide', i===si));
 }
-
 function changeSlide(dir) {
   const post = state.posts[state.modal.postIdx];
-  state.modal.currentSlide = Math.max(0, Math.min(post.slides.length - 1, state.modal.currentSlide + dir));
+  state.modal.currentSlide = Math.max(0, Math.min(post.slides.length-1, state.modal.currentSlide+dir));
   renderModalSlide();
 }
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
-function closeModalOnBg(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOnBg(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 function schedulePost() {
   const pi = state.modal.postIdx;
-  const post = state.posts[pi];
   const t = document.getElementById('scheduleTimeInput').value;
-  if (!t) { toast('Pick a time first', 'info'); return; }
-  post.scheduledTime = t;
+  if (!t) { toast('Pick a time first','info'); return; }
+  state.posts[pi].scheduledTime = t;
   const dt = new Date(t);
-  state.scheduledPosts.push({ postIdx: pi, time: dt, title: post.concept });
-  renderScheduleQueue();
-  closeModal();
-  toast(`Scheduled for ${dt.toLocaleDateString('en-GB', {day:'numeric',month:'short'})} at ${dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} ✓`, 'success');
+  state.scheduledPosts.push({ postIdx: pi, time: dt, title: state.posts[pi].concept });
+  renderScheduleQueue(); renderCalendar(); closeModal();
+  toast(`Scheduled for ${dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} at ${dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} ✓`, 'success');
 }
 
 function downloadSlide() {
-  const mainC = document.getElementById('mainCanvas');
+  const c = document.getElementById('mainCanvas');
   const link = document.createElement('a');
-  link.download = `slide-${state.modal.currentSlide + 1}.png`;
-  link.href = mainC.toDataURL('image/png');
-  link.click();
-  toast('Slide downloaded', 'info');
+  link.download = `slide-${state.modal.currentSlide+1}.png`;
+  link.href = c.toDataURL('image/png'); link.click();
+  toast('Slide downloaded','info');
 }
-
 function downloadAll() {
   const post = state.posts[state.modal.postIdx];
   post.slides.forEach((sl, si) => {
-    const c = document.createElement('canvas');
-    c.width = 1080; c.height = 1080;
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 1080;
     drawSlide(c, sl, si, state.brand);
     setTimeout(() => {
       const link = document.createElement('a');
-      link.download = `carousel-slide-${si + 1}.png`;
-      link.href = c.toDataURL('image/png');
-      link.click();
+      link.download = `slide-${si+1}.png`; link.href = c.toDataURL('image/png'); link.click();
     }, si * 200);
   });
-  toast('Downloading all slides…', 'info');
+  toast('Downloading all slides…','info');
 }
 
-/* ════════════════════════════════════════════════════════
-   GENERATE POSTS
-════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   GENERATE
+════════════════════════════════════════════════════ */
 function generatePosts() {
   const prompt = document.getElementById('postPrompt').value.trim();
-  const count = parseInt(document.getElementById('countSelect').value);
-  if (!prompt) { toast('Add a prompt first', 'info'); return; }
+  const count  = parseInt(document.getElementById('countSelect').value);
+  if (!prompt) { toast('Add a prompt first','info'); return; }
   const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  btn.textContent = '⌛ Generating…';
-  const list = document.getElementById('postsList');
-  list.innerHTML = '';
-  // Shimmer placeholders
+  btn.disabled = true; btn.textContent = '⌛ Generating…';
+  const list = document.getElementById('postsList'); list.innerHTML = '';
   for (let i = 0; i < count; i++) {
-    const shimmer = document.createElement('div');
-    shimmer.className = 'shimmer';
-    shimmer.style.cssText = 'height:70px;border-radius:14px;';
-    list.appendChild(shimmer);
+    const s = document.createElement('div');
+    s.className = 'shimmer'; s.style.cssText = 'height:72px;';
+    list.appendChild(s);
   }
   setTimeout(() => {
-    const generated = generateIdeas(prompt, count);
-    state.posts = generated;
-    renderPosts();
-    btn.disabled = false;
-    btn.textContent = '✦ Generate';
-    toast(`${count} post ideas generated ✦`, 'success');
-  }, 1200 + Math.random() * 800);
+    state.posts = generateIdeas(prompt, count);
+    renderPosts(); btn.disabled = false; btn.textContent = '✦ Generate';
+    toast(`${count} ideas generated ✦`, 'success');
+  }, 1100 + Math.random() * 700);
 }
 
 function generateIdeas(prompt, count) {
-  const vibes = state.brand.vibes.join(', ') || 'minimal';
-  const ideas = [];
+  const kw = extractKeyword(prompt);
+  const brand = state.brand.name;
   const templates = [
-    {
-      conceptFn: (p) => `How ${state.brand.name} Is Changing ${extractKeyword(p)} Forever`,
-      tags: ['#Innovation','#BrandStory','#WhyWeExist'],
-      slideTypes: ['cover','feature','stat','lifestyle','cta']
-    },
-    {
-      conceptFn: (p) => `5 Things to Know Before Buying Your Next ${extractKeyword(p)}`,
-      tags: ['#BuyingGuide','#Tips','#EducateFirst'],
-      slideTypes: ['cover','feature','feature','stat','cta']
-    },
-    {
-      conceptFn: (p) => `The ${vibes.split(',')[0]} Way to ${extractAction(p)}`,
-      tags: ['#LifestyleContent','#BrandVoice',`#${state.brand.name}`],
-      slideTypes: ['cover','lifestyle','lifestyle','feature','cta']
-    },
-    {
-      conceptFn: (p) => `Behind the Brand: Our ${extractKeyword(p)} Story`,
-      tags: ['#BTS','#Transparency','#FounderStory'],
-      slideTypes: ['cover','feature','feature','lifestyle','cta']
-    },
-    {
-      conceptFn: (p) => `Why ${extractKeyword(p)} Matters More Than Ever in 2026`,
-      tags: ['#ThoughtLeadership','#Industry','#Purpose'],
-      slideTypes: ['cover','stat','feature','stat','cta']
-    },
-    {
-      conceptFn: (p) => `Real Talk: What Our Customers Say About ${extractKeyword(p)}`,
-      tags: ['#SocialProof','#CustomerLove','#Reviews'],
-      slideTypes: ['cover','feature','stat','lifestyle','cta']
-    },
-    {
-      conceptFn: (p) => `The ${state.brand.name} Guide to ${extractAction(p)} Better`,
-      tags: ['#HowTo','#Tips','#ValueContent'],
-      slideTypes: ['cover','feature','feature','feature','cta']
-    },
-    {
-      conceptFn: (p) => `Summer Mood: ${extractKeyword(p)} Edition`,
-      tags: ['#SeasonalContent','#Lifestyle','#MoodBoard'],
-      slideTypes: ['cover','lifestyle','lifestyle','stat','cta']
-    },
+    { conceptFn: p=>`How ${brand} Is Changing ${extractKeyword(p)} Forever`,          tags:['#Innovation','#BrandStory','#WhyWeExist'],        slides:['cover','feature','stat','lifestyle','cta'] },
+    { conceptFn: p=>`5 Things to Know Before Buying Your Next ${extractKeyword(p)}`,  tags:['#BuyingGuide','#Tips','#EducateFirst'],           slides:['cover','feature','feature','stat','cta'] },
+    { conceptFn: p=>`The Minimal Way to ${extractAction(p)}`,                          tags:['#Lifestyle','#BrandVoice',`#${brand}`],          slides:['cover','lifestyle','lifestyle','feature','cta'] },
+    { conceptFn: p=>`Behind the Brand: Our ${extractKeyword(p)} Story`,                tags:['#BTS','#Transparency','#FounderStory'],          slides:['cover','feature','feature','lifestyle','cta'] },
+    { conceptFn: p=>`Why ${extractKeyword(p)} Matters More Than Ever in 2026`,         tags:['#ThoughtLeadership','#Industry','#Purpose'],     slides:['cover','stat','feature','stat','cta'] },
+    { conceptFn: p=>`Real Talk: What Our Customers Say About ${extractKeyword(p)}`,    tags:['#SocialProof','#CustomerLove','#Reviews'],       slides:['cover','feature','stat','lifestyle','cta'] },
+    { conceptFn: p=>`The ${brand} Guide to ${extractAction(p)} Better`,                tags:['#HowTo','#Tips','#ValueContent'],                slides:['cover','feature','feature','feature','cta'] },
+    { conceptFn: p=>`Summer Mood: ${extractKeyword(p)} Edition`,                       tags:['#Seasonal','#Lifestyle','#MoodBoard'],           slides:['cover','lifestyle','lifestyle','stat','cta'] },
   ];
-
   const emojis = ['☀️','🌿','✨','🔥','💎','🌊','🎯','⚡','🌸','🏆','💫','🌱'];
-  const subs = [
-    'You\'re going to want to see this',
-    `Powered by ${vibes.split(',')[0]} thinking`,
-    'Swipe to discover',
-    'The story continues →',
-    `Only at ${state.brand.name}`,
-  ];
-
-  for (let i = 0; i < count; i++) {
+  const subs = ['You need to see this', `Only at ${brand}`, 'Swipe to discover', 'The story continues →', 'See the full picture'];
+  return Array.from({length: count}, (_, i) => {
     const t = templates[i % templates.length];
     const concept = t.conceptFn(prompt);
-    const slides = t.slideTypes.map((type, si) => ({
-      type,
-      headline: getSlideHeadline(type, si, concept, prompt),
-      sub: subs[si % subs.length],
-      emoji: emojis[(i * 3 + si) % emojis.length]
+    const slides = t.slides.map((type, si) => ({
+      type, emoji: emojis[(i*3+si) % emojis.length],
+      headline: getHeadline(type, si, concept, prompt),
+      sub: subs[si % subs.length]
     }));
-    ideas.push({
-      id: Date.now() + i,
-      concept,
-      tags: t.tags,
+    return {
+      id: Date.now()+i, concept, tags: t.tags,
       caption: buildCaption(concept, prompt, t.tags),
-      slides,
-      status: 'ready',
-      expanded: false,
-      scheduledTime: null
-    });
-  }
-  return ideas;
+      slides, status: 'ready', expanded: false, scheduledTime: null
+    };
+  });
 }
 
-function extractKeyword(prompt) {
-  const words = prompt.split(' ');
+function extractKeyword(p) {
   const skip = new Set(['a','an','the','and','or','to','for','in','on','our','their','is','are','we','how','should','about','from','with']);
-  return words.find(w => !skip.has(w.toLowerCase()) && w.length > 3) || 'product';
+  return p.split(' ').find(w => !skip.has(w.toLowerCase()) && w.length > 3) || 'product';
 }
-
-function extractAction(prompt) {
-  const verbs = prompt.match(/\b(shop|buy|wear|live|work|move|run|walk|feel|look|find|choose|care|love|use)\b/i);
-  return verbs ? verbs[0] : 'shop';
+function extractAction(p) {
+  const v = p.match(/\b(shop|buy|wear|live|work|move|run|walk|feel|look|find|choose|care|love|use)\b/i);
+  return v ? v[0] : 'shop';
 }
-
-function getSlideHeadline(type, si, concept, prompt) {
+function getHeadline(type, si, concept, prompt) {
   const kw = extractKeyword(prompt);
-  const heads = {
-    cover: concept.length > 30 ? concept.slice(0, 28) + '\n' + concept.slice(28, 50) : concept,
-    feature: `Why ${kw}\nMatters`,
-    stat: `${Math.floor(Math.random() * 50 + 50)}%`,
-    lifestyle: `Your ${kw}\nMoment`,
-    cta: `Get Yours\nToday`
-  };
-  return heads[type] || `Slide ${si + 1}`;
+  const h = { cover:`${concept.slice(0,24)}\n${concept.slice(24,46)||''}`, feature:`Why ${kw}\nMatters`, stat:`${Math.floor(Math.random()*50+50)}%`, lifestyle:`Your ${kw}\nMoment`, cta:`Get Yours\nToday` };
+  return h[type] || `Slide ${si+1}`;
 }
-
 function buildCaption(concept, prompt, tags) {
-  return `${concept} 🔥\n\nHere's what you need to know about ${extractKeyword(prompt)} — swipe through for the full story.\n\n${state.brand.name} is on a mission to change how you think about ${extractKeyword(prompt)}. \n\n→ Link in bio\n\n${tags.join(' ')} #${state.brand.name}`;
+  const kw = extractKeyword(prompt);
+  return `${concept} 🔥\n\nHere's what you need to know about ${kw} — swipe through for the full story.\n\n→ Link in bio\n\n${tags.join(' ')} #${state.brand.name}`;
 }
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    BRAND PANEL
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 function fetchBrand() {
   const url = document.getElementById('brandUrlInput').value.trim();
   if (!url) return;
-  const btn = document.querySelector('.btn-fetch');
-  btn.textContent = '…';
-  btn.disabled = true;
-
+  const btn = document.querySelector('.btn-fetch'); btn.textContent = '…'; btn.disabled = true;
   const brands = {
-    'allbirds': {
-      name:'Allbirds', primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb',
-      font:'Georgia', vibes:['Minimal','Sustainable','Natural'],
-      photoGrads:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']]
-    },
-    'nike': {
-      name:'Nike', primaryColor:'#000000', accentColor:'#ff6b00', bgColor:'#f8f8f8',
-      font:'Arial Black', vibes:['Bold','Athletic','Energetic'],
-      photoGrads:[['#ff6b00','#ff8c00'],['#000000','#333333'],['#e8e8e8','#ffffff'],['#cc3300','#ff6600']]
-    },
-    'apple': {
-      name:'Apple', primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7',
-      font:'Helvetica Neue', vibes:['Minimal','Tech','Premium'],
-      photoGrads:[['#1d1d1f','#333336'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']]
-    },
-    'patagonia': {
-      name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3',
-      font:'Georgia', vibes:['Outdoor','Sustainable','Rugged'],
-      photoGrads:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']]
-    },
-    'glossier': {
-      name:'Glossier', primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5',
-      font:'Helvetica', vibes:['Minimal','Beauty','Soft'],
-      photoGrads:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']]
-    },
+    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',        vibes:['Minimal','Sustainable','Natural'], pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
+    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',     vibes:['Bold','Athletic','Energetic'],      pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
+    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',  vibes:['Minimal','Tech','Premium'],         pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
+    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',         vibes:['Outdoor','Sustainable','Rugged'],   pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
+    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',       vibes:['Minimal','Beauty','Soft'],          pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
   };
-
   setTimeout(() => {
     const key = Object.keys(brands).find(k => url.toLowerCase().includes(k));
-    const brand = brands[key] || {
-      name: new URL(url.startsWith('http') ? url : 'https://'+url).hostname.split('.')[0].replace(/^www/, '').toUpperCase() || 'Brand',
-      primaryColor: '#2d2d44', accentColor: '#7c5cfc', bgColor: '#f5f5f8',
-      font: 'Georgia', vibes: ['Minimal','Modern'],
-      photoGrads:[['#7c5cfc','#a78bfa'],['#2d2d44','#4a4a6a'],['#5c8cfc','#7aabff'],['#fc5c7d','#ff8fa3']]
-    };
-    state.brand.name = brand.name;
-    state.brand.primaryColor = brand.primaryColor;
-    state.brand.accentColor = brand.accentColor;
-    state.brand.bgColor = brand.bgColor;
-    state.brand.font = brand.font;
-    state.brand.vibes = brand.vibes;
-    state.brand.photos = brand.photoGrads.map((g,i) => ({src:null, gradient:g, label:`Photo ${i+1}`}));
-
-    document.querySelector('.topbar-name').innerHTML = `Gen <span>${brand.name}</span>`;
-    document.querySelector('.posts-meta strong').textContent = brand.name;
-
-    btn.textContent = '→ Load';
-    btn.disabled = false;
+    const b = brands[key] || { name:'Brand', primaryColor:'#111', accentColor:'#F04E00', bgColor:'#F6F2EC', font:'Georgia', vibes:['Minimal','Modern'], pg:[['#F04E00','#ff8150'],['#111','#333'],['#F6F2EC','#fff'],['#888','#aaa']] };
+    state.brand.name = b.name; state.brand.primaryColor = b.primaryColor;
+    state.brand.accentColor = b.accentColor; state.brand.bgColor = b.bgColor;
+    state.brand.font = b.font; state.brand.vibes = b.vibes;
+    state.brand.photos = b.pg.map((g,i) => ({gradient:g, label:`Photo ${i+1}`}));
+    document.getElementById('brandMetaName').textContent = b.name;
+    document.querySelector('.topbar-name').innerHTML = `Gen <span>${b.name}</span>`;
+    btn.textContent = '→ Load'; btn.disabled = false;
     renderBrandPanel();
-    toast(`Brand kit loaded: ${brand.name} ✓`, 'success');
-    if (state.posts.length > 0) {
-      state.posts.forEach(p => renderPosts());
-    }
-  }, 900);
+    toast(`Brand kit loaded: ${b.name} ✓`, 'success');
+  }, 850);
 }
 
 function renderBrandPanel() {
-  renderColorSwatches();
-  renderFontList();
-  renderVibeTags();
-  renderPhotosGrid();
+  renderColorSwatches(); renderFontList(); renderVibeTags(); renderPhotosGrid();
 }
 
 function renderColorSwatches() {
-  const wrap = document.getElementById('colorSwatches');
-  const colors = [state.brand.primaryColor, state.brand.bgColor, state.brand.accentColor, shiftColor(state.brand.accentColor, 30), shiftColor(state.brand.primaryColor, 60)];
-  wrap.innerHTML = colors.map((c, i) => `
-    <div class="swatch-wrap" onclick="selectColor(this, '${c}')">
-      <div class="swatch ${i === 0 ? 'selected' : ''}" style="background:${c}" title="${c}"></div>
-      <span class="swatch-label">${c}</span>
-    </div>
-  `).join('') + `<div class="swatch-add" onclick="addColor()" title="Add colour">+</div>`;
+  const colors = [state.brand.primaryColor, state.brand.bgColor, state.brand.accentColor,
+    shiftColor(state.brand.accentColor, 30), shiftColor(state.brand.primaryColor, 60)];
+  document.getElementById('colorSwatches').innerHTML =
+    colors.map((c,i) => `
+      <div class="swatch-wrap" onclick="selectColor(this,'${c}')">
+        <div class="swatch${i===0?' selected':''}" style="background:${c}" title="${c}"></div>
+        <span class="swatch-label">${c}</span>
+      </div>`).join('') + `<div class="swatch-add" onclick="addColor()" title="Add">+</div>`;
 }
 
 function renderFontList() {
   const fonts = [{name:state.brand.font,role:'Heading'},{name:'Inter',role:'Body'},{name:'monospace',role:'Accent'}];
   document.getElementById('fontList').innerHTML = fonts.map((f,i) => `
-    <div class="font-item ${i===0?'active':''}" onclick="selectFont(this, '${f.name}')">
-      <div class="font-meta"><span class="font-name">${f.name}</span><span class="font-role">${f.role}</span></div>
-      <span class="font-preview" style="font-family:${f.name}">Aa</span>
-    </div>
-  `).join('');
+    <div class="font-item${i===0?' active':''}" onclick="selectFont(this,'${f.name}')">
+      <div class="font-meta">
+        <span class="font-name-label">${f.name}</span>
+        <span class="font-role-label">${f.role}</span>
+      </div>
+      <span class="font-preview-text" style="font-family:'${f.name}'">Aa</span>
+    </div>`).join('');
 }
 
 function renderVibeTags() {
-  const allVibes = ['Minimal','Sustainable','Natural','Luxury','Bold','Playful','Earthy','Tech','Outdoor','Beauty','Athletic','Premium'];
-  document.getElementById('vibeTags').innerHTML = allVibes.map(v => `
-    <span class="vibe-tag ${state.brand.vibes.includes(v)?'active':''}" onclick="toggleVibe(this)">${v}</span>
-  `).join('');
+  const all = ['Minimal','Sustainable','Natural','Luxury','Bold','Playful','Earthy','Tech','Outdoor','Beauty','Athletic','Premium'];
+  document.getElementById('vibeTags').innerHTML = all.map(v => `
+    <span class="vibe-tag${state.brand.vibes.includes(v)?' active':''}" onclick="toggleVibe(this)">${v}</span>`).join('');
 }
 
 function renderPhotosGrid() {
   const grid = document.getElementById('photosGrid');
-  grid.innerHTML = state.brand.photos.map((p, i) => `
-    <div class="photo-item selected" onclick="togglePhoto(this, ${i})" id="photo-${i}">
+  grid.innerHTML = state.brand.photos.map((p,i) => `
+    <div class="photo-item selected" onclick="togglePhoto(this,${i})" id="photo-${i}">
       <canvas id="photo-canvas-${i}" width="160" height="160"></canvas>
-    </div>
-  `).join('') + `
+    </div>`).join('') + `
     <div class="photo-add" onclick="uploadPhoto()">
-      <span class="photo-add-icon">+</span>
-      <span>Upload</span>
-    </div>
-  `;
-  state.brand.photos.forEach((p, i) => {
+      <span class="photo-add-icon">+</span><span>Upload</span>
+    </div>`;
+  state.brand.photos.forEach((p,i) => {
     const c = document.getElementById(`photo-canvas-${i}`);
     if (!c) return;
     const ctx = c.getContext('2d');
-    const g = ctx.createLinearGradient(0, 0, 160, 160);
-    g.addColorStop(0, p.gradient[0]);
-    g.addColorStop(1, p.gradient[1]);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 160, 160);
-    // Simple shoe silhouette
-    ctx.save();
-    ctx.globalAlpha = 0.2;
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.ellipse(80, 95, 55, 28, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    ctx.save();
-    ctx.globalAlpha = 0.15;
-    ctx.fillStyle = '#000';
-    ctx.fillRect(25, 55, 110, 45);
-    ctx.restore();
-    ctx.fillStyle = hexToRgba('#fff', 0.9);
-    ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.textAlign = 'center';
+    const g = ctx.createLinearGradient(0,0,160,160);
+    g.addColorStop(0, p.gradient[0]); g.addColorStop(1, p.gradient[1]);
+    ctx.fillStyle = g; ctx.fillRect(0,0,160,160);
+    /* orange accent dot */
+    ctx.fillStyle = hexToRgba(ORANGE, 0.5);
+    ctx.fillRect(0,0,4,160);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(p.label, 80, 130);
   });
 }
@@ -1664,65 +1808,47 @@ function selectColor(el, hex) {
   el.querySelector('.swatch').classList.add('selected');
   state.brand.primaryColor = hex;
 }
-
 function addColor() {
-  const inp = document.createElement('input');
-  inp.type = 'color'; inp.value = state.brand.accentColor;
-  inp.addEventListener('change', (e) => {
-    state.brand.accentColor = e.target.value;
-    renderColorSwatches();
-  });
+  const inp = document.createElement('input'); inp.type = 'color'; inp.value = state.brand.accentColor;
+  inp.addEventListener('change', e => { state.brand.accentColor = e.target.value; renderColorSwatches(); });
   inp.click();
 }
-
-function selectFont(el, fontName) {
+function selectFont(el, name) {
   document.querySelectorAll('.font-item').forEach(f => f.classList.remove('active'));
-  el.classList.add('active');
-  state.brand.font = fontName;
+  el.classList.add('active'); state.brand.font = name;
 }
-
 function toggleVibe(el) {
   el.classList.toggle('active');
   state.brand.vibes = Array.from(document.querySelectorAll('.vibe-tag.active')).map(t => t.textContent);
 }
-
-function togglePhoto(el, i) { el.classList.toggle('selected'); }
-
+function togglePhoto(el) { el.classList.toggle('selected'); }
 function uploadPhoto() {
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = 'image/*';
-  inp.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      state.brand.photos.push({ src: ev.target.result, gradient: ['#666','#999'], label: file.name.split('.')[0] });
-      renderPhotosGrid();
-      toast('Photo uploaded ✓', 'success');
+  const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      state.brand.photos.push({src:ev.target.result, gradient:['#666','#999'], label:f.name.split('.')[0]});
+      renderPhotosGrid(); toast('Photo uploaded ✓','success');
     };
-    reader.readAsDataURL(file);
+    r.readAsDataURL(f);
   });
   inp.click();
 }
+function uploadFont() { toast('Use Google Fonts for custom typefaces','info'); }
+function resetColors() { renderColorSwatches(); toast('Colours reset','info'); }
 
-function uploadFont() { toast('Font upload coming soon — use Google Fonts for now', 'info'); }
-function resetColors() { renderColorSwatches(); toast('Colours reset', 'info'); }
-
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    SCHEDULE QUEUE
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 function renderScheduleQueue() {
   const q = document.getElementById('scheduleQueue');
-  if (state.scheduledPosts.length === 0) {
-    q.innerHTML = `<div class="schedule-empty">
-      <div class="schedule-empty-icon">📅</div>
-      <div>No posts scheduled yet.<br>Generate ideas and hit Schedule.</div>
-    </div>`;
+  if (!state.scheduledPosts.length) {
+    q.innerHTML = `<div class="schedule-empty"><div class="schedule-empty-icon">📅</div>No posts scheduled yet.<br>Generate ideas and hit Schedule.</div>`;
     return;
   }
-  q.innerHTML = state.scheduledPosts.map((sp, i) => {
-    const post = state.posts[sp.postIdx];
-    if (!post) return '';
+  q.innerHTML = state.scheduledPosts.map((sp,i) => {
+    const post = state.posts[sp.postIdx]; if (!post) return '';
     const dt = new Date(sp.time);
     return `<div class="queue-item">
       <div class="queue-thumb"><canvas id="q-canvas-${i}" width="80" height="80"></canvas></div>
@@ -1730,110 +1856,92 @@ function renderScheduleQueue() {
         <div class="queue-title">${post.concept}</div>
         <div class="queue-time">${dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} · ${dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
       </div>
-      <div class="queue-status"><div class="dot-green"></div></div>
+      <div class="dot-green"></div>
     </div>`;
   }).join('');
-  state.scheduledPosts.forEach((sp, i) => {
-    const post = state.posts[sp.postIdx];
-    if (!post) return;
+  state.scheduledPosts.forEach((sp,i) => {
+    const post = state.posts[sp.postIdx]; if (!post) return;
     const c = document.getElementById(`q-canvas-${i}`);
     if (c) drawSlide(c, post.slides[0], 0, state.brand);
   });
 }
 
-function openScheduleAll() {
-  if (state.posts.length === 0) { toast('Generate some posts first', 'info'); return; }
-  toast('Select individual posts and hit Schedule in the carousel view', 'info');
-}
-
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    CALENDAR
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 function renderCalendar() {
-  const { year, month } = state.calendar;
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('calMonth').textContent = `${monthNames[month]} ${year}`;
-  const grid = document.getElementById('calGrid');
-  const dayHeaders = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-  let html = dayHeaders.map(d => `<div class="cal-day-header">${d}</div>`).join('');
-  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
-  const startOffset = (firstDay + 6) % 7; // Make Mon=0
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const {year, month} = state.calendar;
+  const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonth').textContent = `${names[month]} ${year}`;
+  const days = new Date(year,month+1,0).getDate();
+  const start = (new Date(year,month,1).getDay() + 6) % 7;
   const today = new Date();
-  const scheduledDays = new Set(state.scheduledPosts.map(sp => {
+  const sched = new Set(state.scheduledPosts.map(sp => {
     const d = new Date(sp.time);
-    return d.getFullYear() === year && d.getMonth() === month ? d.getDate() : null;
+    return (d.getFullYear()===year && d.getMonth()===month) ? d.getDate() : null;
   }).filter(Boolean));
-  for (let i = 0; i < startOffset; i++) html += `<div class="cal-day empty"></div>`;
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
-    const hasPost = scheduledDays.has(d);
-    html += `<div class="cal-day ${isToday?'today':''} ${hasPost?'has-post':''}">${d}</div>`;
+  const headers = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  let html = headers.map(d=>`<div class="cal-day-header">${d}</div>`).join('');
+  for (let i=0;i<start;i++) html += `<div class="cal-day empty"></div>`;
+  for (let d=1;d<=days;d++) {
+    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
+    html += `<div class="cal-day${isToday?' today':''} ${sched.has(d)?'has-post':''}">${d}</div>`;
   }
-  grid.innerHTML = html;
+  document.getElementById('calGrid').innerHTML = html;
+}
+function prevMonth() { state.calendar.month--; if(state.calendar.month<0){state.calendar.month=11;state.calendar.year--;} renderCalendar(); }
+function nextMonth() { state.calendar.month++; if(state.calendar.month>11){state.calendar.month=0;state.calendar.year++;} renderCalendar(); }
+
+/* ════════════════════════════════════════════════════
+   THEME TOGGLE
+════════════════════════════════════════════════════ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.dataset.theme === 'light' ? 'dark' : 'light';
+  html.dataset.theme = next;
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☽' : '☀';
 }
 
-function prevMonth() {
-  state.calendar.month--;
-  if (state.calendar.month < 0) { state.calendar.month = 11; state.calendar.year--; }
-  renderCalendar();
-}
-function nextMonth() {
-  state.calendar.month++;
-  if (state.calendar.month > 11) { state.calendar.month = 0; state.calendar.year++; }
-  renderCalendar();
-}
-
-/* ════════════════════════════════════════════════════════
-   TOPBAR
-════════════════════════════════════════════════════════ */
-function setView(v) {
+/* ════════════════════════════════════════════════════
+   MISC UI
+════════════════════════════════════════════════════ */
+function setView(btn, v) {
   document.querySelectorAll('.topbar-pills .pill').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  if (v !== 'carousel') toast(`${v.charAt(0).toUpperCase()+v.slice(1)} mode coming soon`, 'info');
+  btn.classList.add('active');
+  if (v !== 'carousel') toast(`${v[0].toUpperCase()+v.slice(1)} mode coming soon`,'info');
 }
-
 function selectPlatform(btn) {
   document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
-
-/* ════════════════════════════════════════════════════════
-   TOAST
-════════════════════════════════════════════════════════ */
-function toast(msg, type = 'info') {
-  const icons = { success: '✓', info: '→' };
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
-  document.getElementById('toastContainer').appendChild(t);
-  requestAnimationFrame(() => { t.classList.add('show'); });
-  setTimeout(() => {
-    t.classList.remove('show');
-    setTimeout(() => t.remove(), 350);
-  }, 3000);
+function openScheduleAll() {
+  if (!state.posts.length) { toast('Generate some posts first','info'); return; }
+  toast('Open a carousel to schedule individual posts','info');
 }
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════ */
+function toast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 350); }, 3200);
+}
+
+/* ════════════════════════════════════════════════════
    INIT
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 function init() {
   state.posts = JSON.parse(JSON.stringify(SAMPLE_POSTS));
-  renderPosts();
   renderBrandPanel();
+  renderPosts();
   renderCalendar();
-
-  // Pre-schedule one post as example
-  state.scheduledPosts.push({
-    postIdx: 0,
-    time: new Date(2026, 5, 25, 9, 0),
-    title: SAMPLE_POSTS[0].concept
-  });
-  state.scheduledPosts.push({
-    postIdx: 2,
-    time: new Date(2026, 5, 27, 11, 30),
-    title: SAMPLE_POSTS[2].concept
-  });
+  /* pre-loaded schedule entries */
+  state.scheduledPosts.push({ postIdx:0, time:new Date(2026,5,25,9,0),  title:SAMPLE_POSTS[0].concept });
+  state.scheduledPosts.push({ postIdx:2, time:new Date(2026,5,27,11,30),title:SAMPLE_POSTS[2].concept });
   renderScheduleQueue();
   renderCalendar();
 }
