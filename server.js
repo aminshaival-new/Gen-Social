@@ -30,7 +30,7 @@ app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   if (username === process.env.AUTH_USER && password === process.env.AUTH_PASS) {
     req.session.authed = true;
-    return res.json({ ok: true });
+    return req.session.save(() => res.json({ ok: true }));
   }
   res.status(401).json({ error: 'Wrong username or password' });
 });
