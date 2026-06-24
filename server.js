@@ -177,7 +177,7 @@ Return this JSON shape:
           "headline": "Short\\nHook",
           "sub": "Supporting subtitle, max 8 words",
           "emoji": "🎯",
-          "imagePrompt": "Detailed visual prompt for FLUX image generation, max 180 chars. Subject, lighting, mood, colours, composition. No text in image."
+          "imagePrompt": "Premium editorial photograph: specific subject, cinematic lighting, luxury brand aesthetic. Colour palette matching brand. Clean composition, magazine quality, ultra-realistic. No text, logos or typography. Max 200 chars."
         }
       ]
     }
@@ -185,7 +185,7 @@ Return this JSON shape:
 }
 
 Each post needs exactly 5 slides: cover → feature → [stat or feature] → lifestyle → cta
-imagePrompt must describe a photograph or illustration, NOT text or typography.`
+imagePrompt must describe a premium photograph or editorial illustration — cinematic, high-end, brand-aligned. Absolutely no text, typography or UI elements in the image.`
     }]);
 
     const result = parseJSON(getText(data));
