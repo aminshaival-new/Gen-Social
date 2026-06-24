@@ -241,7 +241,7 @@ app.post('/api/generate-image', async (req, res) => {
       body: JSON.stringify({
         prompt,
         image_size: 'square_hd',
-        n:          1
+        num_images: 1
       }),
       signal: AbortSignal.timeout(120_000)
     });
