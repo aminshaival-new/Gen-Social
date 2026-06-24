@@ -1,30 +1,73 @@
 require('dotenv').config();
 const express = require('express');
+const session = require('express-session');
 const path    = require('path');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false }));
+
+/* ─── Sessions ───────────────────────────────────────────────── */
+app.use(session({
+  secret:            process.env.SESSION_SECRET || 'dev-secret-change-me',
+  resave:            false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    maxAge:   8 * 60 * 60 * 1000   // 8 hours
+  }
+}));
+
+/* ─── Public routes (no auth required) ──────────────────────── */
+app.get('/login', (_req, res) => res.sendFile(path.join(__dirname, 'login.html')));
+app.get('/',      (req, res) => {
+  if (!req.session.authed) return res.redirect('/login');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === process.env.AUTH_USER && password === process.env.AUTH_PASS) {
+    req.session.authed = true;
+    return res.json({ ok: true });
+  }
+  res.status(401).json({ error: 'Wrong username or password' });
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => res.redirect('/login'));
+});
+
+/* ─── Auth guard — everything below is protected ────────────── */
+app.use((req, res, next) => {
+  if (req.session.authed) return next();
+  const wantsJson = req.xhr || (req.headers.accept || '').includes('application/json');
+  if (wantsJson) return res.status(401).json({ error: 'Not authenticated' });
+  res.redirect('/login');
+});
+
+/* ─── Protected static files ─────────────────────────────────── */
 app.use(express.static(path.join(__dirname)));
 
-/* ─── helpers ────────────────────────────────────────────── */
+/* ─── helpers ────────────────────────────────────────────────── */
 function requireKey(res, ...keys) {
   for (const k of keys) {
     if (!process.env[k]) {
-      res.status(503).json({ error: `${k} not configured in .env` });
+      res.status(503).json({ error: `${k} not configured` });
       return false;
     }
   }
   return true;
 }
 
-/* OpenRouter — OpenAI-compatible, routes to Claude models */
 async function callOpenRouter(messages, maxTokens = 4096) {
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type':  'application/json',
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'HTTP-Referer':  'http://localhost:' + (process.env.PORT || 3000),
+      'HTTP-Referer':  process.env.PUBLIC_URL || 'http://localhost:' + (process.env.PORT || 3000),
       'X-Title':       'Gen Social'
     },
     body: JSON.stringify({
@@ -47,7 +90,7 @@ function parseJSON(text) {
   return JSON.parse(text);
 }
 
-/* ─── GET /api/config-status ─────────────────────────────── */
+/* ─── GET /api/config-status ─────────────────────────────────── */
 app.get('/api/config-status', (_req, res) => {
   res.json({
     claude:  !!process.env.OPENROUTER_API_KEY,
@@ -56,7 +99,7 @@ app.get('/api/config-status', (_req, res) => {
   });
 });
 
-/* ─── POST /api/brand-analyze ────────────────────────────── */
+/* ─── POST /api/brand-analyze ────────────────────────────────── */
 app.post('/api/brand-analyze', async (req, res) => {
   try {
     if (!requireKey(res, 'OPENROUTER_API_KEY')) return;
@@ -104,7 +147,7 @@ Return exactly:
   }
 });
 
-/* ─── POST /api/generate-ideas ───────────────────────────── */
+/* ─── POST /api/generate-ideas ──────────────────────────────── */
 app.post('/api/generate-ideas', async (req, res) => {
   try {
     if (!requireKey(res, 'OPENROUTER_API_KEY')) return;
@@ -151,7 +194,7 @@ imagePrompt must describe a photograph or illustration, NOT text or typography.`
   }
 });
 
-/* ─── POST /api/rewrite-caption ──────────────────────────── */
+/* ─── POST /api/rewrite-caption ─────────────────────────────── */
 app.post('/api/rewrite-caption', async (req, res) => {
   try {
     if (!requireKey(res, 'OPENROUTER_API_KEY')) return;
@@ -174,7 +217,7 @@ Write a fresh, engaging caption. Keep the brand voice. Include 1-2 emojis. End w
   }
 });
 
-/* ─── POST /api/generate-image  (Fal AI — FLUX Pro) ─────── */
+/* ─── POST /api/generate-image  (Fal AI — FLUX Pro) ─────────── */
 app.post('/api/generate-image', async (req, res) => {
   try {
     if (!requireKey(res, 'FAL_KEY')) return;
@@ -188,11 +231,11 @@ app.post('/api/generate-image', async (req, res) => {
       },
       body: JSON.stringify({
         prompt,
-        image_size:              'square_hd',  // 1024 × 1024
-        num_images:              1,
-        enable_safety_checker:   false
+        image_size:            'square_hd',
+        num_images:            1,
+        enable_safety_checker: false
       }),
-      signal: AbortSignal.timeout(120_000)     // 2 min max
+      signal: AbortSignal.timeout(120_000)
     });
 
     const data = await r.json();
@@ -200,12 +243,10 @@ app.post('/api/generate-image', async (req, res) => {
       throw new Error(data.message || data.detail || `Fal AI ${r.status}`);
     }
 
-    /* Fetch the image and return as base64 data-URL so the
-       browser canvas never has a cross-origin taint issue    */
-    const imgRes  = await fetch(data.images[0].url);
-    const imgBuf  = await imgRes.arrayBuffer();
-    const mime    = imgRes.headers.get('content-type') || 'image/jpeg';
-    const b64     = Buffer.from(imgBuf).toString('base64');
+    const imgRes = await fetch(data.images[0].url);
+    const imgBuf = await imgRes.arrayBuffer();
+    const mime   = imgRes.headers.get('content-type') || 'image/jpeg';
+    const b64    = Buffer.from(imgBuf).toString('base64');
 
     res.json({ imageUrl: `data:${mime};base64,${b64}` });
   } catch (err) {
@@ -214,7 +255,7 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 
-/* ─── POST /api/schedule  (Blotato → Instagram) ─────────── */
+/* ─── POST /api/schedule  (Blotato → Instagram) ─────────────── */
 app.post('/api/schedule', async (req, res) => {
   try {
     if (!requireKey(res, 'BLOTATO_API_KEY')) return;
@@ -223,7 +264,6 @@ app.post('/api/schedule', async (req, res) => {
     const BLOTATO = 'https://api.blotato.com/v1';
     const AUTH    = { Authorization: `Bearer ${process.env.BLOTATO_API_KEY}` };
 
-    /* 1. Upload each slide image, collect media IDs */
     const mediaIds = [];
     for (const imgData of images) {
       const base64 = imgData.replace(/^data:image\/\w+;base64,/, '');
@@ -238,7 +278,6 @@ app.post('/api/schedule', async (req, res) => {
       mediaIds.push(upData.id ?? upData.media_id ?? upData.mediaId);
     }
 
-    /* 2. Schedule the post */
     const body = {
       platform:     'instagram',
       type:         'carousel',
@@ -263,14 +302,15 @@ app.post('/api/schedule', async (req, res) => {
   }
 });
 
-/* ─── Start ──────────────────────────────────────────────── */
+/* ─── Start ──────────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`\n  Gen Social  →  http://localhost:${PORT}\n`);
   const services = {
-    'OpenRouter → Claude (ideas/captions)': !!process.env.OPENROUTER_API_KEY,
-    'Fal AI → FLUX Pro (image gen)':        !!process.env.FAL_KEY,
-    'Blotato (Instagram scheduling)':        !!process.env.BLOTATO_API_KEY
+    'OpenRouter → Claude':       !!process.env.OPENROUTER_API_KEY,
+    'Fal AI → FLUX Pro':         !!process.env.FAL_KEY,
+    'Blotato (scheduling)':      !!process.env.BLOTATO_API_KEY,
+    'Auth configured':           !!(process.env.AUTH_USER && process.env.AUTH_PASS)
   };
   for (const [k, v] of Object.entries(services))
     console.log(`  ${v ? '✓' : '✗'} ${k}`);

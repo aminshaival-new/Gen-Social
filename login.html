@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gen Social — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #FAFAF7;
+    --surface: #FFFFFF;
+    --border:  #111111;
+    --text:    #111111;
+    --muted:   #666666;
+    --accent:  #F04E00;
+    --shadow:  4px 4px 0px #111111;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image: radial-gradient(circle, #d0d0c8 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 40px 40px 36px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border: 2px solid var(--border);
+    box-shadow: 2px 2px 0 var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  input {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    color: var(--text);
+    outline: none;
+    margin-bottom: 16px;
+    transition: box-shadow 0.15s;
+  }
+
+  input:focus {
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+
+  input::placeholder { color: #aaa; }
+
+  button[type="submit"] {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    margin-top: 4px;
+  }
+
+  button[type="submit"]:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #111111;
+  }
+
+  button[type="submit"]:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #111111;
+  }
+
+  button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+
+  .error {
+    display: none;
+    background: #fff0eb;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+
+  .error.visible { display: block; }
+
+  .footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-mark">✦</div>
+    <span class="logo-name">Gen Social</span>
+  </div>
+
+  <h1>Sign in to<br>your studio</h1>
+  <p class="subtitle">Enter your credentials to continue.</p>
+
+  <div class="error" id="err"></div>
+
+  <form id="form">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" placeholder="username" autocomplete="username" required>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+
+    <button type="submit" id="btn">Sign In</button>
+  </form>
+</div>
+
+<p class="footer">Gen Social · Instagram Carousel Studio</p>
+
+<script>
+  const form = document.getElementById('form');
+  const btn  = document.getElementById('btn');
+  const err  = document.getElementById('err');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    err.classList.remove('visible');
+
+    try {
+      const res = await fetch('/api/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        window.location.href = '/';
+      } else {
+        err.textContent = data.error || 'Sign in failed. Check your credentials.';
+        err.classList.add('visible');
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+      }
+    } catch (_) {
+      err.textContent = 'Could not reach the server. Try again.';
+      err.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>
