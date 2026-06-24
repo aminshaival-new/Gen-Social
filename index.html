@@ -2086,7 +2086,7 @@ async function fetchBrand() {
       font: 'Georgia', vibes: ['Minimal', 'Modern'],
       pg:[['#F04E00','#ff8150'],['#111','#333'],['#F6F2EC','#fff'],['#888','#aaa']]
     }, btn);
-    toast('Claude unavailable — used domain name as fallback', 'info');
+    toast(`Brand AI error: ${err.message || 'check OPENROUTER_API_KEY in Railway'} — used fallback`, 'info');
   }
 }
 
