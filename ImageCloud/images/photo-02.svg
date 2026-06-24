@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260" viewBox="0 0 200 260">
+  <rect width="200" height="260" fill="#1c1a16"/>
+  <g transform="translate(-20,10)"><rect x="70" y="62" width="100" height="96" fill="#f2efe8" opacity="0.85"/></g>
+  <text x="100" y="242" text-anchor="middle" font-family="monospace" font-size="13" font-weight="900" fill="#f2efe8" letter-spacing="3" opacity="0.7">STORY</text>
+  <rect x="1" y="1" width="198" height="258" fill="none" stroke="#f2efe8" stroke-width="1.5" opacity="0.25"/>
+</svg>

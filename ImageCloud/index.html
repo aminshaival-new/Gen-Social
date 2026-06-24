@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Cloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Doto:wght@900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --paper:   #f2efe8;
+  --ink:     #1c1a16;
+  --orange:  #ff6b1a;
+  --panel:   #ebe8e0;
+  --shadow:  4px 4px 0 #1c1a16;
+  --shadow-s:2px 2px 0 #1c1a16;
+  --radius:  0px;
+  --font-ui: 'Outfit', system-ui, sans-serif;
+  --font-num:'Doto', monospace;
+}
+
+[data-dark] {
+  --paper:  #0e0d0b;
+  --ink:    #f2efe8;
+  --panel:  #1c1a16;
+  --shadow: 4px 4px 0 #f2efe8;
+  --shadow-s:2px 2px 0 #f2efe8;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  background: var(--paper);
+  color: var(--ink);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── Background canvas ── */
+#bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Scene ── */
+#scene {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  overflow: hidden;
+}
+#scene.dragging { cursor: grabbing; }
+
+#viewport {
+  position: relative;
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+  /* perspective set in JS */
+}
+
+#sphere {
+  position: absolute;
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+  transform-origin: 0 0 0;
+}
+
+/* ── Image cards ── */
+.card {
+  position: absolute;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  user-select: none;
+  will-change: transform, opacity, filter;
+  transition: filter 0.2s;
+}
+
+.card img {
+  display: block;
+  border: none;
+  outline: none;
+  box-shadow: 3px 3px 12px rgba(0,0,0,0.25);
+  pointer-events: none;
+  max-width: 100%;
+}
+
+.card:hover img {
+  box-shadow: 5px 5px 0 var(--orange), 8px 8px 20px rgba(0,0,0,0.3);
+}
+
+/* ── Top bar ── */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--paper);
+  border-bottom: 2px solid var(--ink);
+  pointer-events: none;
+}
+
+#topbar > * { pointer-events: all; }
+
+.logo-word {
+  font-family: var(--font-num);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  flex-shrink: 0;
+}
+
+.count-badge {
+  font-family: var(--font-num);
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.45;
+  letter-spacing: 1px;
+}
+
+.spacer { flex: 1; }
+
+.icon-btn {
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-s);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.1s, box-shadow 0.1s;
+  white-space: nowrap;
+}
+.icon-btn:hover {
+  transform: translate(-1px,-1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.icon-btn:active {
+  transform: translate(1px,1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+.icon-btn.active {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+/* ── Controls panel ── */
+#panel {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 100;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow);
+  padding: 16px 18px 14px;
+  width: 228px;
+  transition: background 0.3s;
+}
+
+#panel-title {
+  font-family: var(--font-num);
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--orange);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+.ctrl-row:last-child { margin-bottom: 0; }
+
+.ctrl-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.6;
+  width: 66px;
+  flex-shrink: 0;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 4px;
+  background: var(--ink);
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  background: var(--orange);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  box-shadow: 1px 1px 0 var(--ink);
+}
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  background: var(--orange);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.ctrl-val {
+  font-family: var(--font-num);
+  font-weight: 900;
+  font-size: 12px;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+
+/* Toggle */
+.toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+.toggle-track {
+  width: 32px; height: 16px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.toggle-track.on { background: var(--orange); }
+.toggle-thumb {
+  position: absolute;
+  top: 0; left: 0;
+  width: 12px; height: 12px;
+  background: var(--ink);
+  transition: left 0.15s;
+}
+.toggle-track.on .toggle-thumb { left: 16px; }
+.toggle-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+/* Speed row */
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 11px;
+}
+
+/* Preset buttons */
+.presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--ink);
+}
+.preset-btn {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-s);
+  color: var(--ink);
+  padding: 4px 9px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.preset-btn:hover {
+  transform: translate(-1px,-1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.preset-btn:active {
+  transform: translate(1px,1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+.preset-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── Lightbox ── */
+#lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(28,26,22,0.88);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+#lightbox.open { display: flex; }
+
+#lightbox-inner {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  cursor: default;
+}
+
+#lightbox-img {
+  display: block;
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  box-shadow: 8px 8px 0 var(--orange), 12px 12px 32px rgba(0,0,0,0.5);
+}
+
+#lightbox-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 30px; height: 30px;
+  background: var(--orange);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  color: #fff;
+  line-height: 1;
+}
+
+/* ── Hint ── */
+#hint {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  opacity: 0.35;
+  text-align: right;
+  line-height: 1.8;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Animated dot-matrix background -->
+<canvas id="bg"></canvas>
+
+<!-- 3D scene -->
+<div id="scene">
+  <div id="viewport">
+    <div id="sphere"></div>
+  </div>
+</div>
+
+<!-- Top bar -->
+<div id="topbar">
+  <span class="logo-word">IMAGE</span>
+  <div class="logo-dot"></div>
+  <span class="logo-word">CLOUD</span>
+  <span class="count-badge" id="count-badge">0 PHOTOS</span>
+  <div class="spacer"></div>
+  <button class="icon-btn" id="btn-dark" title="Toggle dark mode">◐</button>
+  <button class="icon-btn active" id="btn-play">▶ PLAY</button>
+</div>
+
+<!-- Controls panel -->
+<div id="panel">
+  <div id="panel-title">Controls</div>
+
+  <div class="ctrl-row">
+    <span class="ctrl-label">Spacing</span>
+    <input type="range" id="sl-spacing" min="60" max="200" value="120" step="1">
+    <span class="ctrl-val" id="v-spacing">120</span>
+  </div>
+
+  <div class="ctrl-row">
+    <span class="ctrl-label">Depth</span>
+    <input type="range" id="sl-depth" min="40" max="160" value="100" step="1">
+    <span class="ctrl-val" id="v-depth">100</span>
+  </div>
+
+  <div class="ctrl-row">
+    <span class="ctrl-label">Size</span>
+    <input type="range" id="sl-size" min="40" max="180" value="100" step="1">
+    <span class="ctrl-val" id="v-size">100</span>
+  </div>
+
+  <div class="ctrl-row">
+    <span class="ctrl-label">Speed</span>
+    <input type="range" id="sl-speed" min="1" max="10" value="3" step="1">
+    <span class="ctrl-val" id="v-speed">3</span>
+  </div>
+
+  <div class="ctrl-row">
+    <span class="ctrl-label">Tilt</span>
+    <label class="toggle-wrap" id="tog-tilt">
+      <div class="toggle-track" id="tt-tilt"><div class="toggle-thumb"></div></div>
+      <span class="toggle-label">Toward center</span>
+    </label>
+  </div>
+
+  <div class="ctrl-row">
+    <span class="ctrl-label">Fade</span>
+    <label class="toggle-wrap" id="tog-fade">
+      <div class="toggle-track on" id="tt-fade"><div class="toggle-thumb"></div></div>
+      <span class="toggle-label">Distant photos</span>
+    </label>
+  </div>
+
+  <div class="presets">
+    <button class="preset-btn" data-preset="editorial">Editorial</button>
+    <button class="preset-btn" data-preset="gallery">Gallery</button>
+    <button class="preset-btn" data-preset="orbit">Orbit</button>
+    <button class="preset-btn" data-preset="dense">Dense</button>
+  </div>
+</div>
+
+<!-- Hint -->
+<div id="hint">
+  Drag to orbit &nbsp;·&nbsp; Scroll to zoom<br>
+  Click image to view
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <div id="lightbox-inner">
+    <img id="lightbox-img" src="" alt="">
+    <div id="lightbox-close">✕</div>
+  </div>
+</div>
+
+<!-- Image data (from data.js) -->
+<script src="data.js"></script>
+
+<script>
+'use strict';
+
+// ─── Constants & State ───────────────────────────────────────────
+const PHI = Math.PI * (1 + Math.sqrt(5));
+const TAU = Math.PI * 2;
+
+const state = {
+  rotX: -0.2,
+  rotY: 0,
+  velX: 0,
+  velY: 0.003,
+  zoom: 1,
+  playing: true,
+  dark: false,
+
+  // sliders
+  spacing: 120,
+  depth: 100,
+  size: 100,
+  speed: 3,
+
+  // toggles
+  tilt: false,
+  fade: true,
+
+  dragging: false,
+  lastMx: 0,
+  lastMy: 0,
+
+  perspective: 900,
+};
+
+// ─── DOM refs ────────────────────────────────────────────────────
+const $bg       = document.getElementById('bg');
+const $scene    = document.getElementById('scene');
+const $viewport = document.getElementById('viewport');
+const $sphere   = document.getElementById('sphere');
+const $lightbox = document.getElementById('lightbox');
+const $lbImg    = document.getElementById('lightbox-img');
+const $btnPlay  = document.getElementById('btn-play');
+const $btnDark  = document.getElementById('btn-dark');
+const $badge    = document.getElementById('count-badge');
+
+const $slSpacing = document.getElementById('sl-spacing');
+const $slDepth   = document.getElementById('sl-depth');
+const $slSize    = document.getElementById('sl-size');
+const $slSpeed   = document.getElementById('sl-speed');
+
+const $vSpacing = document.getElementById('v-spacing');
+const $vDepth   = document.getElementById('v-depth');
+const $vSize    = document.getElementById('v-size');
+const $vSpeed   = document.getElementById('v-speed');
+
+const $ttTilt = document.getElementById('tt-tilt');
+const $ttFade = document.getElementById('tt-fade');
+
+// ─── Background canvas ───────────────────────────────────────────
+const bgCtx = $bg.getContext('2d');
+let bgT = 0;
+
+function resizeBg() {
+  $bg.width  = window.innerWidth;
+  $bg.height = window.innerHeight;
+}
+
+function drawBg() {
+  const W = $bg.width, H = $bg.height;
+  bgCtx.clearRect(0, 0, W, H);
+
+  const gap = 28;
+  const r = 1.6;
+  const dark = state.dark;
+  const ink = dark ? '#f2efe8' : '#1c1a16';
+
+  const cols = Math.ceil(W / gap) + 2;
+  const rows = Math.ceil(H / gap) + 2;
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const bx = col * gap;
+      const by = row * gap;
+      const wave = Math.sin((col * 0.3 + bgT * 0.7)) * Math.cos((row * 0.3 + bgT * 0.5));
+      const pulse = (wave + 1) / 2;
+      const alpha = 0.06 + pulse * 0.09;
+      const dotR  = r * (0.5 + pulse * 0.6);
+
+      bgCtx.beginPath();
+      bgCtx.arc(bx, by, dotR, 0, TAU);
+      bgCtx.fillStyle = ink;
+      bgCtx.globalAlpha = alpha;
+      bgCtx.fill();
+    }
+  }
+  bgCtx.globalAlpha = 1;
+}
+
+// ─── Sphere layout ───────────────────────────────────────────────
+let cards = [];   // { el, img, fx, fy, fz, nx, ny, nz }
+
+function fibonacci3D(n, radius) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const theta = Math.acos(1 - 2 * (i + 0.5) / n);
+    const phi   = PHI * i;
+    pts.push({
+      x: radius * Math.sin(theta) * Math.cos(phi),
+      y: radius * Math.cos(theta),
+      z: radius * Math.sin(theta) * Math.sin(phi),
+      nx: Math.sin(theta) * Math.cos(phi),
+      ny: Math.cos(theta),
+      nz: Math.sin(theta) * Math.sin(phi),
+    });
+  }
+  return pts;
+}
+
+function buildSphere() {
+  // Clear old
+  $sphere.innerHTML = '';
+  cards = [];
+
+  const images = window.IMAGES || [];
+  if (!images.length) return;
+
+  const N = images.length;
+  $badge.textContent = N + (N === 1 ? ' PHOTO' : ' PHOTOS');
+
+  const radius = state.spacing * Math.max(1, Math.sqrt(N / 8));
+  const pts = fibonacci3D(N, radius);
+
+  images.forEach((imgDef, i) => {
+    const pt = pts[i];
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const img = document.createElement('img');
+    img.src = imgDef.src;
+    img.draggable = false;
+    img.alt = '';
+    img.loading = 'lazy';
+    card.appendChild(img);
+    $sphere.appendChild(card);
+
+    card.addEventListener('click', (e) => {
+      if (state.dragMoved) return;
+      e.stopPropagation();
+      openLightbox(imgDef.src);
+    });
+
+    cards.push({ el: card, img, pt });
+  });
+}
+
+// ─── Render frame ────────────────────────────────────────────────
+let lastTime = 0;
+
+function render(ts) {
+  requestAnimationFrame(render);
+
+  const dt = Math.min((ts - lastTime) / 1000, 0.1);
+  lastTime = ts;
+  bgT += dt;
+
+  drawBg();
+
+  // Auto-rotation
+  if (state.playing && !state.dragging) {
+    state.rotY += (state.speed * 0.004) * dt * 60;
+  }
+
+  // Inertia decay when not dragging
+  if (!state.dragging) {
+    state.velX *= 0.94;
+    state.velY *= 0.94;
+    state.rotX += state.velX;
+    state.rotY += state.velY;
+    if (state.playing) state.velY = 0; // playing overrides inertia Y
+  }
+
+  // Clamp rotX
+  state.rotX = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, state.rotX));
+
+  // Apply sphere rotation
+  const rx = state.rotX;
+  const ry = state.rotY;
+  $sphere.style.transform = `rotateX(${rx}rad) rotateY(${ry}rad)`;
+
+  // Update perspective / viewport
+  const p = state.perspective * state.zoom;
+  $viewport.style.perspective = p + 'px';
+
+  // Update each card depth-sorted position
+  const radius = state.spacing * Math.max(1, Math.sqrt(cards.length / 8));
+  const depthScale = state.depth / 100;
+  const sizeScale  = state.size / 100;
+
+  // We need to sort cards by z in world space after rotation
+  // Compute world-z for each card
+  const cosx = Math.cos(rx), sinx = Math.sin(rx);
+  const cosy = Math.cos(ry), siny = Math.sin(ry);
+
+  let zOrder = cards.map((c, i) => {
+    const { pt } = c;
+    const fx = pt.x * depthScale;
+    const fy = pt.y * depthScale;
+    const fz = pt.z * depthScale;
+    // Rotate Y then X to get world Z
+    const rx_x =  cosy * fx + siny * fz;
+    const rx_z = -siny * fx + cosy * fz;
+    const wz   =  sinx * fy + cosx * rx_z;
+    return { i, wz };
+  });
+
+  zOrder.sort((a, b) => a.wz - b.wz);
+
+  zOrder.forEach(({ i, wz }, sortIdx) => {
+    const c = cards[i];
+    const { el, img, pt } = c;
+
+    const fx = pt.x;
+    const fy = pt.y;
+    const fz = pt.z;
+
+    const normZ = wz / (radius * 1.05);
+    const depth01 = (normZ + 1) / 2; // 0 = far, 1 = near
+
+    // Scale
+    const minScale = 0.4, maxScale = 1.0;
+    const depthScaleFactor = minScale + depth01 * (maxScale - minScale);
+    const finalScale = sizeScale * depthScaleFactor;
+
+    // Opacity & blur
+    let opacity = 1, blur = 0;
+    if (state.fade) {
+      opacity = 0.3 + depth01 * 0.7;
+      blur    = (1 - depth01) * 3.5;
+    }
+
+    // z-index
+    el.style.zIndex = sortIdx;
+
+    // Tilt toward center
+    let tiltTransform = '';
+    if (state.tilt) {
+      const { nx, ny, nz } = pt;
+      const tiltY =  Math.atan2(nz, nx) * (180 / Math.PI) - 90;
+      const tiltX = -Math.asin(ny) * (180 / Math.PI);
+      tiltTransform = ` rotateY(${tiltY.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg)`;
+    }
+
+    el.style.transform = `translate3d(${fx.toFixed(1)}px,${fy.toFixed(1)}px,${fz.toFixed(1)}px)${tiltTransform} scale(${finalScale.toFixed(3)})`;
+    el.style.opacity = opacity.toFixed(3);
+    el.style.filter  = blur > 0.2 ? `blur(${blur.toFixed(1)}px)` : '';
+
+    // Image sizing
+    const baseW = Math.round(90 + sizeScale * 80);
+    img.style.width  = baseW + 'px';
+    img.style.height = 'auto';
+  });
+}
+
+// ─── Drag / orbit ────────────────────────────────────────────────
+let pointerDown = false;
+let pLastX = 0, pLastY = 0;
+
+$scene.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('#panel') || e.target.closest('#topbar')) return;
+  pointerDown = true;
+  state.dragging = true;
+  state.dragMoved = false;
+  pLastX = e.clientX;
+  pLastY = e.clientY;
+  state.velX = 0;
+  state.velY = 0;
+  $scene.classList.add('dragging');
+  $scene.setPointerCapture(e.pointerId);
+});
+
+$scene.addEventListener('pointermove', (e) => {
+  if (!pointerDown) return;
+  const dx = e.clientX - pLastX;
+  const dy = e.clientY - pLastY;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) state.dragMoved = true;
+
+  const sens = 0.008;
+  state.velY = dx * sens;
+  state.velX = dy * sens;
+  state.rotY += state.velY;
+  state.rotX += state.velX;
+
+  pLastX = e.clientX;
+  pLastY = e.clientY;
+});
+
+window.addEventListener('pointerup', () => {
+  pointerDown = false;
+  state.dragging = false;
+  $scene.classList.remove('dragging');
+  if (state.playing) state.velY = 0;
+});
+
+// ─── Zoom ────────────────────────────────────────────────────────
+$scene.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.92 : 1.09;
+  state.zoom = Math.max(0.25, Math.min(4, state.zoom * delta));
+}, { passive: false });
+
+// Pinch-to-zoom (touch)
+let lastPinch = 0;
+$scene.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) lastPinch = Math.hypot(
+    e.touches[0].clientX - e.touches[1].clientX,
+    e.touches[0].clientY - e.touches[1].clientY
+  );
+}, { passive: true });
+$scene.addEventListener('touchmove', (e) => {
+  if (e.touches.length === 2) {
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if (lastPinch) state.zoom = Math.max(0.25, Math.min(4, state.zoom * dist / lastPinch));
+    lastPinch = dist;
+  }
+}, { passive: true });
+
+// ─── Controls ────────────────────────────────────────────────────
+function setSlider(id, valId, key, rebuild) {
+  const sl = document.getElementById(id);
+  const vl = document.getElementById(valId);
+  sl.addEventListener('input', () => {
+    state[key] = +sl.value;
+    vl.textContent = sl.value;
+    clearActivePreset();
+    if (rebuild) buildSphere();
+  });
+}
+
+setSlider('sl-spacing', 'v-spacing', 'spacing', true);
+setSlider('sl-depth',   'v-depth',   'depth',   false);
+setSlider('sl-size',    'v-size',    'size',    false);
+setSlider('sl-speed',   'v-speed',   'speed',   false);
+
+function makeToggle(trackId, wrapId, key) {
+  const track = document.getElementById(trackId);
+  const wrap  = document.getElementById(wrapId);
+  wrap.addEventListener('click', () => {
+    state[key] = !state[key];
+    track.classList.toggle('on', state[key]);
+    clearActivePreset();
+  });
+}
+
+makeToggle('tt-tilt', 'tog-tilt', 'tilt');
+makeToggle('tt-fade', 'tog-fade', 'fade');
+
+// Play / stop
+$btnPlay.addEventListener('click', () => {
+  state.playing = !state.playing;
+  $btnPlay.classList.toggle('active', state.playing);
+  $btnPlay.textContent = state.playing ? '▶ PLAY' : '⏹ STOP';
+  if (state.playing) state.velY = 0;
+});
+
+// Dark mode
+$btnDark.addEventListener('click', () => {
+  state.dark = !state.dark;
+  document.body.toggleAttribute('data-dark', state.dark);
+  $btnDark.classList.toggle('active', state.dark);
+});
+
+// ─── Presets ─────────────────────────────────────────────────────
+const PRESETS = {
+  editorial: { spacing: 130, depth: 90, size: 110, speed: 2, tilt: false, fade: true },
+  gallery:   { spacing: 150, depth: 100, size: 130, speed: 3, tilt: false, fade: false },
+  orbit:     { spacing: 100, depth: 120, size: 80,  speed: 6, tilt: true,  fade: true },
+  dense:     { spacing: 70,  depth: 80,  size: 65,  speed: 4, tilt: false, fade: true },
+};
+
+function clearActivePreset() {
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+}
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = PRESETS[btn.dataset.preset];
+    if (!p) return;
+    clearActivePreset();
+    btn.classList.add('active');
+    applyPreset(p);
+  });
+});
+
+function applyPreset(p) {
+  state.spacing = p.spacing;
+  state.depth   = p.depth;
+  state.size    = p.size;
+  state.speed   = p.speed;
+  state.tilt    = p.tilt;
+  state.fade    = p.fade;
+
+  $slSpacing.value = p.spacing; $vSpacing.textContent = p.spacing;
+  $slDepth.value   = p.depth;   $vDepth.textContent   = p.depth;
+  $slSize.value    = p.size;    $vSize.textContent    = p.size;
+  $slSpeed.value   = p.speed;   $vSpeed.textContent   = p.speed;
+  $ttTilt.classList.toggle('on', p.tilt);
+  $ttFade.classList.toggle('on', p.fade);
+
+  buildSphere();
+}
+
+// ─── Lightbox ────────────────────────────────────────────────────
+function openLightbox(src) {
+  $lbImg.src = src;
+  $lightbox.classList.add('open');
+}
+
+function closeLightbox() {
+  $lightbox.classList.remove('open');
+  $lbImg.src = '';
+}
+
+$lightbox.addEventListener('click', (e) => {
+  if (e.target === $lightbox) closeLightbox();
+});
+
+document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// ─── Resize ──────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  resizeBg();
+});
+
+// ─── Init ────────────────────────────────────────────────────────
+function init() {
+  resizeBg();
+  buildSphere();
+  requestAnimationFrame(render);
+}
+
+// Wait for fonts
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>

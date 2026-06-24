@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="200" viewBox="0 0 260 200">
+  <rect width="260" height="200" fill="#f39c12"/>
+  <g transform="translate(10,-20)"><rect x="105" y="62" width="30" height="96" fill="#1c1a16" opacity="0.85"/>
+              <rect x="72" y="95" width="96" height="30" fill="#1c1a16" opacity="0.85"/></g>
+  <text x="130" y="182" text-anchor="middle" font-family="monospace" font-size="13" font-weight="900" fill="#1c1a16" letter-spacing="3" opacity="0.7">GLOW</text>
+  <rect x="1" y="1" width="258" height="198" fill="none" stroke="#1c1a16" stroke-width="1.5" opacity="0.25"/>
+</svg>
