@@ -73,7 +73,7 @@ async function callOpenRouter(messages, maxTokens = 4096) {
       'X-Title':       'Gen Social'
     },
     body: JSON.stringify({
-      model:      'anthropic/claude-3.5-haiku',
+      model:      'anthropic/claude-3-haiku',
       max_tokens: maxTokens,
       messages
     })
