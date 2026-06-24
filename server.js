@@ -226,7 +226,7 @@ Write a fresh, engaging caption. Keep the brand voice. Include 1-2 emojis. End w
   }
 });
 
-/* ─── POST /api/generate-image  (Fal AI — GPT Image 1) ──────── */
+/* ─── POST /api/generate-image  (Fal AI — GPT Image 2) ──────── */
 app.post('/api/generate-image', async (req, res) => {
   try {
     if (!requireKey(res, 'FAL_KEY')) return;
@@ -246,9 +246,14 @@ app.post('/api/generate-image', async (req, res) => {
       signal: AbortSignal.timeout(120_000)
     });
 
-    const data = await r.json();
+    // Read raw text first — Fal can return HTML error pages on bad routes
+    const raw = await r.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch(_) { throw new Error(`Fal AI ${r.status} — ${raw.slice(0, 300)}`); }
+
     if (!r.ok || !data.images?.[0]?.url) {
-      throw new Error(data.message || data.detail || `Fal AI ${r.status}: ${JSON.stringify(data)}`);
+      throw new Error(data.message || data.detail || data.error || `Fal AI ${r.status}: ${JSON.stringify(data)}`);
     }
 
     const imgRes = await fetch(data.images[0].url);
