@@ -225,7 +225,7 @@ app.post('/api/generate-image', async (req, res) => {
     if (!requireKey(res, 'FAL_KEY')) return;
     const { prompt } = req.body;
 
-    const r = await fetch('https://fal.run/fal-ai/gpt-image-1', {
+    const r = await fetch('https://fal.run/openai/gpt-image-2', {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
