@@ -3,42 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gen Social — Instagram Carousel Studio</title>
+<title>poppi Studio — Content Creator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 
 /* ══════════════════════════════════════════
    DESIGN TOKENS
 ══════════════════════════════════════════ */
 :root {
-  /* Accent — the one colour */
-  --orange: #F04E00;
-  --orange-dim: rgba(240,78,0,0.12);
-  --orange-faint: rgba(240,78,0,0.06);
+  /* poppi brand colour — hot pink replaces orange throughout */
+  --orange: #FF2D6B;
+  --orange-dim: rgba(255,45,107,0.12);
+  --orange-faint: rgba(255,45,107,0.06);
 
   /* Light mode */
-  --bg:        #F6F2EC;
-  --bg-panel:  #FDFAF6;
+  --bg:        #FFFFFF;
+  --bg-panel:  #FFF5F8;
   --bg-card:   #FFFFFF;
-  --bg-input:  #FDFAF6;
-  --bg-chip:   #EDE9E2;
-  --text:      #111111;
-  --text-2:    #555550;
-  --text-3:    #999990;
-  --border:    #111111;
-  --border-soft: #DDD9D2;
-  --shadow-card: 4px 4px 0px #111111;
-  --shadow-btn:  3px 3px 0px #111111;
-  --shadow-lg:   6px 6px 0px #111111;
-  --shadow-modal:8px 8px 0px #111111;
+  --bg-input:  #FFF5F8;
+  --bg-chip:   #FFE0EC;
+  --text:      #1C1C1E;
+  --text-2:    #5C4550;
+  --text-3:    #9B7888;
+  --border:    #1C1C1E;
+  --border-soft: #F0C0D0;
+  --shadow-card: 4px 4px 0px #1C1C1E;
+  --shadow-btn:  3px 3px 0px #1C1C1E;
+  --shadow-lg:   6px 6px 0px #1C1C1E;
+  --shadow-modal:8px 8px 0px #1C1C1E;
 
   /* Dot texture */
-  --dot-color: rgba(0,0,0,0.07);
+  --dot-color: rgba(255,45,107,0.06);
 
   /* Typography */
-  --font-head: 'Syne', 'Arial Black', sans-serif;
+  --font-head: 'Plus Jakarta Sans', 'Arial Black', sans-serif;
   --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
 
   /* Geometry */
@@ -48,23 +48,23 @@
 }
 
 [data-theme="dark"] {
-  --bg:        #111111;
-  --bg-panel:  #181818;
-  --bg-card:   #1F1F1F;
-  --bg-input:  #181818;
-  --bg-chip:   #2A2A2A;
-  --text:      #F0EDE8;
-  --text-2:    #9D9D95;
-  --text-3:    #5A5A54;
-  --border:    #F0EDE8;
-  --border-soft: #2E2E2E;
-  --shadow-card: 4px 4px 0px rgba(240,237,232,0.18);
-  --shadow-btn:  3px 3px 0px rgba(240,237,232,0.18);
-  --shadow-lg:   6px 6px 0px rgba(240,237,232,0.18);
-  --shadow-modal:8px 8px 0px rgba(240,237,232,0.18);
-  --dot-color: rgba(255,255,255,0.04);
-  --orange-dim: rgba(240,78,0,0.18);
-  --orange-faint: rgba(240,78,0,0.08);
+  --bg:        #110A0E;
+  --bg-panel:  #1A0F14;
+  --bg-card:   #201318;
+  --bg-input:  #1A0F14;
+  --bg-chip:   #2E1520;
+  --text:      #FFE8F0;
+  --text-2:    #B090A0;
+  --text-3:    #6A4858;
+  --border:    #FFE8F0;
+  --border-soft: #3A1828;
+  --shadow-card: 4px 4px 0px rgba(255,232,240,0.18);
+  --shadow-btn:  3px 3px 0px rgba(255,232,240,0.18);
+  --shadow-lg:   6px 6px 0px rgba(255,232,240,0.18);
+  --shadow-modal:8px 8px 0px rgba(255,232,240,0.18);
+  --dot-color: rgba(255,45,107,0.06);
+  --orange-dim: rgba(255,45,107,0.18);
+  --orange-faint: rgba(255,45,107,0.08);
 }
 
 /* ══════════════════════════════════════════
@@ -1030,8 +1030,8 @@ a { color: inherit; text-decoration: none; }
 <!-- ═══════════════ TOP BAR ═══════════════ -->
 <header class="topbar">
   <div class="topbar-brand">
-    <div class="topbar-logo">G</div>
-    <div class="topbar-name">Gen <span>Social</span></div>
+    <div class="topbar-logo">p</div>
+    <div class="topbar-name">poppi <span>Studio</span></div>
   </div>
 
   <div class="topbar-pills">
@@ -1050,7 +1050,7 @@ a { color: inherit; text-decoration: none; }
     <button class="btn-ghost">↑ Export All</button>
     <button class="btn-primary" onclick="openScheduleAll()">Schedule All →</button>
     <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀</button>
-    <div class="avatar">A</div>
+    <div class="avatar">P</div>
   </div>
 </header>
 
@@ -1110,8 +1110,8 @@ a { color: inherit; text-decoration: none; }
       <div class="prompt-label">What are we posting?</div>
       <div class="posts-input-row">
         <textarea class="post-prompt" id="postPrompt" rows="3"
-          placeholder="Describe your campaign… e.g. 'Summer launch — wool runners, eco-materials, conscious shoppers'"
-        >Summer collection launch — showcase our new wool runners, highlight eco-friendly materials, speak to comfort-conscious shoppers who care about sustainability</textarea>
+          placeholder="Describe your campaign… e.g. 'Summer flavour drop — prebiotic soda, gut health, Gen Z audience'"
+        >New flavour drop — vibrant prebiotic soda for the health-conscious generation that refuses to give up taste</textarea>
         <div class="prompt-side">
           <select class="count-select" id="countSelect">
             <option value="3">3 ideas</option>
@@ -1123,7 +1123,7 @@ a { color: inherit; text-decoration: none; }
         </div>
       </div>
       <div class="posts-meta">
-        <span class="meta-text">Brand: <strong id="brandMetaName">Allbirds</strong></span>
+        <span class="meta-text">Brand: <strong id="brandMetaName">poppi</strong></span>
         <span class="meta-chip">5 slides / post</span>
         <span class="meta-chip">1 : 1</span>
         <span class="meta-chip">Instagram</span>
@@ -1259,17 +1259,17 @@ a { color: inherit; text-decoration: none; }
 ════════════════════════════════════════════════════ */
 const state = {
   brand: {
-    name: 'Allbirds',
-    primaryColor: '#1a1a2e',
-    accentColor: '#9b7543',
-    bgColor: '#f5f0eb',
-    font: 'Georgia',
-    vibes: ['Minimal','Sustainable','Natural'],
+    name: 'poppi',
+    primaryColor: '#FF2D6B',
+    accentColor: '#FFE000',
+    bgColor: '#FFFFFF',
+    font: 'Plus Jakarta Sans',
+    vibes: ['Vibrant','Playful','Bold','Health-forward'],
     photos: [
-      { gradient: ['#9b7543','#c5b08a'], label: 'Wool Runner' },
-      { gradient: ['#4a7c59','#a8d5b5'], label: 'Tree Dasher' },
-      { gradient: ['#2c3e50','#4a6fa5'], label: 'Lounger' },
-      { gradient: ['#8b6f47','#d4a76a'], label: 'Piper' },
+      { gradient: ['#FF2D6B','#FF85A1'], label: 'Strawberry Lemon' },
+      { gradient: ['#FFE000','#FFB700'], label: 'Tropical Mango'   },
+      { gradient: ['#7B61FF','#B48AF7'], label: 'Grape'            },
+      { gradient: ['#00C9A7','#00E4BF'], label: 'Watermelon'       },
     ]
   },
   posts: [],
@@ -1284,71 +1284,71 @@ const state = {
 const SAMPLE_POSTS = [
   {
     id:1,
-    concept: 'Step Into Summer — Introducing the Wool Runner Mist',
-    tags: ['#NewArrivals','#SummerVibes','#Allbirds'],
-    caption: "☁️ Meet the Wool Runner Mist. Cool when it's warm, warm when it's cool — made from ZQ-certified merino wool so the planet feels good too.\n\nShop the Summer collection → link in bio\n\n#Allbirds #WoolRunner #SustainableStyle #ComfortFirst #EcoFashion",
+    concept: 'The Soda That Actually Loves Your Gut Back',
+    tags: ['#PrebioticSoda','#GutHealth','#poppi'],
+    caption: "🌸 We put gut health in a can — and it actually tastes amazing.\n\npoppi packs prebiotics into every sip, with real fruit juice and just 25 calories. No compromise, no weird taste. Just soda that does more.\n\nShop now → link in bio\n\n#poppi #GutHealth #PrebioticSoda #FeelGoodSoda #FunctionalBeverage",
     slides: [
-      { type:'cover',    headline:'Step Into\nSummer',      sub:'The Wool Runner Mist',           emoji:'☁️' },
-      { type:'feature',  headline:'ZQ Merino\nWool',        sub:'Temperature-regulating, naturally',emoji:'🌿' },
-      { type:'stat',     headline:'95%',                    sub:'Natural & renewable materials',   emoji:'♻️' },
-      { type:'lifestyle',headline:'All Day\nComfort',       sub:'From coffee to coastline',        emoji:'☀️' },
-      { type:'cta',      headline:'Shop Now',               sub:'Link in bio → Allbirds.com',     emoji:'👟' },
+      { type:'cover',    headline:'Good for\nYour Gut',    sub:'Soda that does more for you',        emoji:'🌸' },
+      { type:'feature',  headline:'Prebiotics\nIn Every Sip',sub:'The gut-loving ingredient list',   emoji:'🔬' },
+      { type:'stat',     headline:'25 Cal',                sub:'Real taste, not a sacrifice',         emoji:'⚡' },
+      { type:'lifestyle',headline:'Sip. Glow.\nRepeat.',   sub:'Your gut will thank you',            emoji:'✨' },
+      { type:'cta',      headline:'Try poppi',             sub:'Link in bio → drinkpoppi.com',       emoji:'🥤' },
     ],
     status:'ready', expanded:false, scheduledTime:null
   },
   {
     id:2,
-    concept: "Why Sustainable Shoes Don't Mean Sacrificing Style",
-    tags: ['#Sustainability','#EcoFashion','#ConsciousLiving'],
-    caption: "You don't have to choose between looking good and doing good. 🌍\n\nAt Allbirds, we've spent years proving that comfort, style, and sustainability can coexist — and the numbers back us up.\n\n#EcoConscious #SustainableFootwear #StyleWithPurpose #GreenLiving",
+    concept: "5 Flavours Gen Z Can't Stop Drinking",
+    tags: ['#NewFlavours','#GenZ','#SodaSzn'],
+    caption: "Every flavour hits different. 🩷\n\nFrom tangy Strawberry Lemon to sweet Tropical Mango — poppi has the range. Prebiotic benefits, real fruit juice, and taste that doesn't lie.\n\nWhich one's your vibe? Drop it below 👇\n\n#poppi #FlavourDrop #PrebioticSoda #GutHealth #SodaSzn",
     slides: [
-      { type:'cover',    headline:'Style\n& Conscience',    sub:'Why choose one?',                emoji:'🌍' },
-      { type:'stat',     headline:'0 lbs',                  sub:'Carbon per pair — our 2025 goal',emoji:'🎯' },
-      { type:'feature',  headline:'Sugar Cane\nSoles',      sub:'SweetFoam™ — lower footprint',   emoji:'🌱' },
-      { type:'feature',  headline:'Recycled\nLaces',        sub:'Made from plastic bottles',      emoji:'♻️' },
-      { type:'cta',      headline:'Join the\nMovement',     sub:'allbirds.com/sustainability',    emoji:'✊' },
+      { type:'cover',    headline:'5 Flavours\nthat Slap',  sub:'Prebiotics never tasted this good', emoji:'🎨' },
+      { type:'feature',  headline:'Strawberry\nLemon',      sub:'Tangy. Sweet. Totally addictive.',   emoji:'🍓' },
+      { type:'feature',  headline:'Tropical\nMango',        sub:'Summer in a can, all year.',         emoji:'🥭' },
+      { type:'lifestyle',headline:'Pick Your\nFlavour',     sub:"There's a poppi for every mood",     emoji:'🌈' },
+      { type:'cta',      headline:'Shop All\nFlavours',     sub:'drinkpoppi.com → Try the bundle',   emoji:'🛒' },
     ],
     status:'ready', expanded:false, scheduledTime:null
   },
   {
     id:3,
-    concept: '5 Reasons Our Customers Never Go Back to Regular Sneakers',
-    tags: ['#CustomerLove','#WoolRunners','#Comfort'],
-    caption: "Once you go Allbirds, there's no going back. 😅\n\nHere's what our community keeps telling us — over and over again. Swipe to see why 60M+ pairs have been sold worldwide.\n\n#HonestReview #AllbirdsLife #ComfortIsCool",
+    concept: 'Why 5M+ People Switched to poppi',
+    tags: ['#5MillionFans','#poppiCommunity','#GutHealth'],
+    caption: "5 million people can't be wrong. 🔥\n\nWhen a soda tastes this good AND is good for you — word travels fast. Join the fastest-growing drink community on the planet.\n\nLink in bio to find yours 🥤\n\n#poppi #PrebioticSoda #HealthySoda #GutHealth",
     slides: [
-      { type:'cover',    headline:"5 Reasons\nYou'll Never",sub:'Go back to regular sneakers',    emoji:'🤯' },
-      { type:'feature',  headline:'No Break-In\nPeriod',    sub:'Soft from step one',             emoji:'🚀' },
-      { type:'feature',  headline:'Machine\nWashable',      sub:'Throw them in, come out fresh',  emoji:'🫧' },
-      { type:'stat',     headline:'4.8★',                   sub:'Average across 100k reviews',    emoji:'⭐' },
-      { type:'cta',      headline:'Try Yours',              sub:'Free returns — always',          emoji:'🎁' },
+      { type:'cover',    headline:'Why 5M+\nAgree',         sub:"The soda switch they don't regret", emoji:'🔥' },
+      { type:'stat',     headline:'5M+',                    sub:'Fans and counting',                  emoji:'🌍' },
+      { type:'feature',  headline:'No Artificial\nColours', sub:'Real ingredients, real results',     emoji:'🌿' },
+      { type:'lifestyle',headline:'The Community\nIs Real', sub:'@drinkpoppi — tag us in your sip',  emoji:'📸' },
+      { type:'cta',      headline:'Join the\nMovement',     sub:'Link in bio',                       emoji:'🩷' },
     ],
     status:'ready', expanded:false, scheduledTime:null
   },
   {
     id:4,
-    concept: 'Behind the Shoe: How We Turn Wool into Your Favourite Sneaker',
-    tags: ['#BehindTheScenes','#HowItsMade','#Transparency'],
-    caption: "From New Zealand merino farms to your doorstep — here's how your Allbirds are born. 🐑→👟\n\nWe believe in radical transparency. Swipe to see the journey.\n\n#BTS #HowItsMade #FarmToFoot #Allbirds",
+    concept: 'Behind the Can: Why We Put Apple Cider Vinegar in Your Soda',
+    tags: ['#BehindTheCan','#ACV','#HowItsMade'],
+    caption: "It started with a question: what if soda could be good for you? 🤔\n\nApple cider vinegar + prebiotics + real fruit juice = the magic inside every poppi can. Swipe to see how we made healthy soda actually taste amazing.\n\n#BehindTheCan #HowItsMade #poppi #PrebioticSoda",
     slides: [
-      { type:'cover',    headline:'From Farm\nto Foot',     sub:'How your Allbirds are born',     emoji:'🐑' },
-      { type:'feature',  headline:'New Zealand\nFarms',     sub:'ZQ-certified ethical sourcing',   emoji:'🌏' },
-      { type:'feature',  headline:'Natural\nDyeing',        sub:'Lower water, no harsh chemicals', emoji:'🎨' },
-      { type:'feature',  headline:'Responsible\nFactory',   sub:'Fair wages, safe conditions',    emoji:'🏭' },
-      { type:'cta',      headline:'Learn More',             sub:'Our full impact report is live', emoji:'📋' },
+      { type:'cover',    headline:'Behind the\nCan',        sub:'Our not-so-secret formula',          emoji:'🔍' },
+      { type:'feature',  headline:'Apple Cider\nVinegar',   sub:'The gut-loving base of every sip',   emoji:'🍏' },
+      { type:'feature',  headline:'Real Fruit\nJuice',      sub:'Not flavouring. Actual fruit.',      emoji:'🍓' },
+      { type:'lifestyle',headline:'Crafted\nwith Care',     sub:'Small-batch thinking, big-batch scale',emoji:'🏭' },
+      { type:'cta',      headline:'Read Our\nStory',        sub:'drinkpoppi.com/story',               emoji:'📖' },
     ],
-    status:'pending', expanded:false, scheduledTime:null
+    status:'ready', expanded:false, scheduledTime:null
   },
   {
     id:5,
-    concept: 'Morning Ritual: How Our Shoes Fit Into Every Part of Your Day',
-    tags: ['#DayInTheLife','#LifestyleContent','#AllbirdsEveryDay'],
-    caption: "From the first coffee to the last stretch — your Allbirds were made for the whole day. 🌅\n\nTagging us in your daily moments is the highlight of our feed. 📸\n\n#GRWM #DailyEssentials #AllbirdsLife #ComfortableStyle",
+    concept: "Summer Drop '26 — New Flavours Just Landed",
+    tags: ['#SummerDrop','#NewFlavours','#poppiSummer'],
+    caption: "Summer just got better. ☀️\n\nOur summer drop is HERE and it's giving everything. New flavours, same gut-loving formula — made for pool days, rooftop hangs, and everything in between.\n\n🩷 Tag a friend who needs this in their fridge.\n\n#SummerDrop #poppi #NewFlavour #PrebioticSoda #SummerVibes",
     slides: [
-      { type:'cover',    headline:'Your Day,\nYour Birds',  sub:'Morning to midnight',             emoji:'🌅' },
-      { type:'lifestyle',headline:'Morning\nCoffee Run',    sub:'Brunch is always better comfortable',emoji:'☕' },
-      { type:'lifestyle',headline:'Work From\nAnywhere',    sub:'Supportive enough for long days', emoji:'💻' },
-      { type:'lifestyle',headline:'Golden Hour\nWalk',      sub:'Built for the detour',           emoji:'🌇' },
-      { type:'cta',      headline:'Tag Us\n#AllbirdsLife',  sub:'We feature our favourites',      emoji:'📸' },
+      { type:'cover',    headline:"Summer\nDrop '26",       sub:'New flavours just landed',           emoji:'☀️' },
+      { type:'feature',  headline:'New Flavours\nDropping', sub:'Your summer essential is here',      emoji:'🌊' },
+      { type:'stat',     headline:'60 Cal',                 sub:'All the taste, none of the guilt',   emoji:'🔥' },
+      { type:'lifestyle',headline:'Sunshine\n& poppi',      sub:'The duo that defines summer',        emoji:'🌅' },
+      { type:'cta',      headline:'Grab Yours\nNow',        sub:'Limited summer run → link in bio',  emoji:'🛍️' },
     ],
     status:'ready', expanded:false, scheduledTime:null
   }
@@ -1360,10 +1360,10 @@ const SAMPLE_POSTS = [
    black / off-white / orange accent only.
 ════════════════════════════════════════════════════ */
 
-const ORANGE = '#F04E00';
-const CREAM  = '#F6F2EC';
-const BLACK  = '#111111';
-const WHITE  = '#FDFAF6';
+const ORANGE = '#FF2D6B';  // poppi hot pink
+const CREAM  = '#FFF5F8';  // pale pink-white
+const BLACK  = '#1C1C1E';  // near-black
+const WHITE  = '#FFFFFF';  // pure white
 
 function drawSlide(canvas, slide, idx, brand) {
   const ctx = canvas.getContext('2d');
@@ -1789,11 +1789,11 @@ async function makeImages(pi) {
 
 function buildImagePrompt(slide, post, brand) {
   const typeStyle = {
-    cover:     'hero product photography, dramatic lighting, bold composition',
-    feature:   'clean minimalist product flat lay, studio lighting, white space',
-    stat:      'bold graphic design, strong geometric shapes, high contrast',
-    lifestyle: 'warm lifestyle photography, natural light, aspirational scene',
-    cta:       'inviting product shot, warm tones, call-to-action energy'
+    cover:     'vibrant hero soda can photography, bold colour pop, Gen Z aesthetic, dynamic splash',
+    feature:   'clean product flat lay, colourful pastel background, poppi soda can centred, studio light',
+    stat:      'bold graphic composition, hot pink and yellow high saturation, strong visual energy',
+    lifestyle: 'bright lifestyle photography, trendy young people enjoying drinks outdoors, natural light',
+    cta:       'colourful soda can arrangement, fun energetic mood, Instagram-ready square format'
   };
   const vibes = (brand.vibes || ['Premium']).join(' ');
   const base  = slide.imagePrompt || `${slide.type} slide visual for ${brand.name}`;
@@ -2046,11 +2046,12 @@ async function fetchBrand() {
 
   /* Known brands — instant local fallback */
   const localBrands = {
-    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',       vibes:['Minimal','Sustainable','Natural'], pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
-    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',    vibes:['Bold','Athletic','Energetic'],      pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
-    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue', vibes:['Minimal','Tech','Premium'],         pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
-    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',        vibes:['Outdoor','Sustainable','Rugged'],   pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
-    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',      vibes:['Minimal','Beauty','Soft'],          pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
+    poppi:     { name:'poppi',     primaryColor:'#FF2D6B', accentColor:'#FFE000', bgColor:'#FFFFFF', font:'Plus Jakarta Sans', vibes:['Vibrant','Playful','Bold','Health-forward'], pg:[['#FF2D6B','#FF85A1'],['#FFE000','#FFB700'],['#7B61FF','#B48AF7'],['#00C9A7','#00E4BF']] },
+    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',           vibes:['Minimal','Sustainable','Natural'],            pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
+    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',       vibes:['Bold','Athletic','Energetic'],                pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
+    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',    vibes:['Minimal','Tech','Premium'],                   pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
+    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',           vibes:['Outdoor','Sustainable','Rugged'],             pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
+    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',         vibes:['Minimal','Beauty','Soft'],                    pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
   };
 
   const localKey = Object.keys(localBrands).find(k => url.toLowerCase().includes(k));
@@ -2095,7 +2096,6 @@ function applyBrandKit(b, btn) {
   state.brand.font = b.font; state.brand.vibes = b.vibes || [];
   state.brand.photos = (b.pg || []).map((g, i) => ({ gradient: g, label: `Photo ${i+1}` }));
   document.getElementById('brandMetaName').textContent = b.name;
-  document.querySelector('.topbar-name').innerHTML = `Gen <span>${b.name}</span>`;
   btn.textContent = '→ Load'; btn.disabled = false;
   renderBrandPanel();
   toast(`Brand kit loaded: ${b.name} ✓`, 'success');
@@ -2129,7 +2129,7 @@ function renderFontList() {
 }
 
 function renderVibeTags() {
-  const all = ['Minimal','Sustainable','Natural','Luxury','Bold','Playful','Earthy','Tech','Outdoor','Beauty','Athletic','Premium'];
+  const all = ['Vibrant','Playful','Bold','Health-forward','Gen Z','Y2K','Colorful','Fun','Minimal','Beauty','Athletic','Premium'];
   document.getElementById('vibeTags').innerHTML = all.map(v => `
     <span class="vibe-tag${state.brand.vibes.includes(v)?' active':''}" onclick="toggleVibe(this)">${v}</span>`).join('');
 }

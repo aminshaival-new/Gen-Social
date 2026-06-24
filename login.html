@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gen Social — Sign In</title>
+<title>poppi Studio — Sign In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:      #FAFAF7;
-    --surface: #FFFFFF;
-    --border:  #111111;
-    --text:    #111111;
-    --muted:   #666666;
-    --accent:  #F04E00;
-    --shadow:  4px 4px 0px #111111;
+    --pink:    #FF2D6B;
+    --yellow:  #FFE000;
+    --bg:      #FFFFFF;
+    --panel:   #FFF5F8;
+    --text:    #1C1C1E;
+    --muted:   #9B7888;
+    --border:  #1C1C1E;
+    --chip:    #FFE0EC;
+    --shadow:  4px 4px 0px #1C1C1E;
   }
 
   body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -29,12 +31,12 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background-image: radial-gradient(circle, #d0d0c8 1px, transparent 1px);
+    background-image: radial-gradient(circle, rgba(255,45,107,0.07) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
   .card {
-    background: var(--surface);
+    background: var(--bg);
     border: 2px solid var(--border);
     box-shadow: var(--shadow);
     padding: 40px 40px 36px;
@@ -50,26 +52,31 @@
   }
 
   .logo-mark {
-    width: 36px;
-    height: 36px;
-    background: var(--accent);
+    width: 38px;
+    height: 38px;
+    background: var(--pink);
     border: 2px solid var(--border);
     box-shadow: 2px 2px 0 var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1px;
   }
 
   .logo-name {
-    font-family: 'Syne', sans-serif;
     font-weight: 800;
     font-size: 20px;
     letter-spacing: -0.5px;
   }
 
+  .logo-name .studio {
+    color: var(--pink);
+  }
+
   h1 {
-    font-family: 'Syne', sans-serif;
     font-weight: 800;
     font-size: 26px;
     line-height: 1.15;
@@ -85,8 +92,8 @@
 
   label {
     display: block;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 6px;
@@ -95,9 +102,9 @@
   input {
     width: 100%;
     padding: 11px 14px;
-    font-family: 'Inter', sans-serif;
+    font-family: inherit;
     font-size: 15px;
-    background: var(--bg);
+    background: var(--panel);
     border: 2px solid var(--border);
     color: var(--text);
     outline: none;
@@ -106,19 +113,19 @@
   }
 
   input:focus {
-    box-shadow: 3px 3px 0 var(--accent);
+    box-shadow: 3px 3px 0 var(--pink);
   }
 
-  input::placeholder { color: #aaa; }
+  input::placeholder { color: #c090a8; }
 
   button[type="submit"] {
     width: 100%;
     padding: 13px;
-    background: var(--accent);
+    background: var(--pink);
     color: #fff;
     border: 2px solid var(--border);
     box-shadow: var(--shadow);
-    font-family: 'Syne', sans-serif;
+    font-family: inherit;
     font-weight: 800;
     font-size: 15px;
     letter-spacing: 0.02em;
@@ -129,12 +136,12 @@
 
   button[type="submit"]:hover {
     transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0px #111111;
+    box-shadow: 5px 5px 0px var(--border);
   }
 
   button[type="submit"]:active {
     transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0px #111111;
+    box-shadow: 2px 2px 0px var(--border);
   }
 
   button[type="submit"]:disabled {
@@ -146,11 +153,11 @@
 
   .error {
     display: none;
-    background: #fff0eb;
-    border: 2px solid var(--accent);
-    color: var(--accent);
+    background: #fff0f5;
+    border: 2px solid var(--pink);
+    color: var(--pink);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 10px 14px;
     margin-bottom: 16px;
   }
@@ -163,14 +170,35 @@
     color: var(--muted);
     text-align: center;
   }
+
+  .flavor-strip {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+
+  .flavor-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+  }
 </style>
 </head>
 <body>
 
 <div class="card">
   <div class="logo">
-    <div class="logo-mark">✦</div>
-    <span class="logo-name">Gen Social</span>
+    <div class="logo-mark">p</div>
+    <span class="logo-name">poppi <span class="studio">Studio</span></span>
+  </div>
+
+  <div class="flavor-strip">
+    <div class="flavor-dot" style="background:#FF2D6B"></div>
+    <div class="flavor-dot" style="background:#FFE000"></div>
+    <div class="flavor-dot" style="background:#7B61FF"></div>
+    <div class="flavor-dot" style="background:#00C9A7"></div>
+    <div class="flavor-dot" style="background:#FF85A1"></div>
   </div>
 
   <h1>Sign in to<br>your studio</h1>
@@ -185,11 +213,11 @@
     <label for="password">Password</label>
     <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
 
-    <button type="submit" id="btn">Sign In</button>
+    <button type="submit" id="btn">Sign In →</button>
   </form>
 </div>
 
-<p class="footer">Gen Social · Instagram Carousel Studio</p>
+<p class="footer">poppi Studio · Content Creator</p>
 
 <script>
   const form = document.getElementById('form');
@@ -218,13 +246,13 @@
         err.textContent = data.error || 'Sign in failed. Check your credentials.';
         err.classList.add('visible');
         btn.disabled = false;
-        btn.textContent = 'Sign In';
+        btn.textContent = 'Sign In →';
       }
     } catch (_) {
       err.textContent = 'Could not reach the server. Try again.';
       err.classList.add('visible');
       btn.disabled = false;
-      btn.textContent = 'Sign In';
+      btn.textContent = 'Sign In →';
     }
   });
 </script>
