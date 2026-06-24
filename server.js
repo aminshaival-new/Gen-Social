@@ -161,8 +161,8 @@ app.post('/api/generate-ideas', async (req, res) => {
 
 Brand name: ${brand.name}
 Brand vibe: ${(brand.vibes || []).join(', ')}
-Brand colours: primary ${brand.primaryColor}, accent ${brand.accentColor}
-Campaign brief: ${prompt}
+Brand colours: primary ${brand.primaryColor}, accent ${brand.accentColor}, background ${brand.bgColor || '#FFFFFF'}
+Industry/campaign brief: ${prompt}
 
 Return this JSON shape:
 {
@@ -177,7 +177,7 @@ Return this JSON shape:
           "headline": "Short\\nHook",
           "sub": "Supporting subtitle, max 8 words",
           "emoji": "🎯",
-          "imagePrompt": "Premium editorial photograph: specific subject, cinematic lighting, luxury brand aesthetic. Colour palette matching brand. Clean composition, magazine quality, ultra-realistic. No text, logos or typography. Max 200 chars."
+          "imagePrompt": "see rules below"
         }
       ]
     }
@@ -185,7 +185,14 @@ Return this JSON shape:
 }
 
 Each post needs exactly 5 slides: cover → feature → [stat or feature] → lifestyle → cta
-imagePrompt must describe a premium photograph or editorial illustration — cinematic, high-end, brand-aligned. Absolutely no text, typography or UI elements in the image.`
+
+IMAGEPROMPT RULES — each imagePrompt must describe a complete professional Instagram marketing slide design (like a finished ad creative), NOT a photo. Include:
+- Slide type purpose (cover hero / feature highlight / stat data / lifestyle scene / CTA action)
+- Brand color palette: dominant ${brand.primaryColor}, accent ${brand.accentColor}
+- Clean B2B/professional corporate style matching the brand vibe
+- Specific visual composition: what imagery, layout, and graphic elements appear (product mockup, app screenshot style, industry equipment, abstract data graphic, bold typography layout, etc.)
+- "Instagram square format, premium quality, social media ready"
+- Keep under 220 chars. Do NOT mention text overlays or logos — describe only the visual design and imagery.`
     }]);
 
     const result = parseJSON(getText(data));
