@@ -4,6 +4,7 @@ const session = require('express-session');
 const path    = require('path');
 
 const app = express();
+app.set('trust proxy', 1); // Railway runs behind a proxy; needed for secure cookies
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
 
@@ -15,6 +16,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge:   8 * 60 * 60 * 1000   // 8 hours
   }
 }));
