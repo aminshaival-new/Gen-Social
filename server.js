@@ -96,7 +96,7 @@ function parseJSON(text) {
 app.get('/api/config-status', (_req, res) => {
   res.json({
     claude:  !!process.env.OPENROUTER_API_KEY,
-    openai:  !!process.env.OPENAI_API_KEY,
+    openai:  !!process.env.FAL_KEY,
     blotato: !!process.env.BLOTATO_API_KEY
   });
 });
@@ -219,34 +219,37 @@ Write a fresh, engaging caption. Keep the brand voice. Include 1-2 emojis. End w
   }
 });
 
-/* ─── POST /api/generate-image  (OpenAI — GPT Image 2) ──────── */
+/* ─── POST /api/generate-image  (Fal AI — GPT Image 1) ──────── */
 app.post('/api/generate-image', async (req, res) => {
   try {
-    if (!requireKey(res, 'OPENAI_API_KEY')) return;
+    if (!requireKey(res, 'FAL_KEY')) return;
     const { prompt } = req.body;
 
-    const r = await fetch('https://api.openai.com/v1/images/generations', {
+    const r = await fetch('https://fal.run/fal-ai/gpt-image-1', {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Authorization': `Key ${process.env.FAL_KEY}`
       },
       body: JSON.stringify({
-        model:   'gpt-image-1',
         prompt,
-        n:       1,
-        size:    '1024x1024'
+        image_size: 'square_hd',
+        n:          1
       }),
       signal: AbortSignal.timeout(120_000)
     });
 
     const data = await r.json();
-    if (!r.ok) throw new Error(data.error?.message || `OpenAI ${r.status}`);
+    if (!r.ok || !data.images?.[0]?.url) {
+      throw new Error(data.message || data.detail || `Fal AI ${r.status}: ${JSON.stringify(data)}`);
+    }
 
-    const b64 = data.data?.[0]?.b64_json;
-    if (!b64) throw new Error('No image returned from OpenAI');
+    const imgRes = await fetch(data.images[0].url);
+    const imgBuf = await imgRes.arrayBuffer();
+    const mime   = imgRes.headers.get('content-type') || 'image/png';
+    const b64    = Buffer.from(imgBuf).toString('base64');
 
-    res.json({ imageUrl: `data:image/png;base64,${b64}` });
+    res.json({ imageUrl: `data:${mime};base64,${b64}` });
   } catch (err) {
     console.error('/api/generate-image', err.message);
     res.status(500).json({ error: err.message });
