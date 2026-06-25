@@ -1443,202 +1443,269 @@ function slideBrand(ctx, w, h, name, color) {
   ctx.restore();
 }
 
-/* COVER — editorial hero */
+/* COVER — bold primary bg, white text, strong first impression */
 function drawCoverSlide(ctx, w, h, slide, idx, brand, pal) {
-  ctx.fillStyle = pal.nearWhite;
+  /* full primary bg */
+  ctx.fillStyle = pal.p;
   ctx.fillRect(0, 0, w, h);
 
-  /* left color bar */
-  ctx.fillStyle = pal.p;
-  ctx.fillRect(0, 0, w * 0.014, h);
+  /* subtle diagonal accent strip top-right */
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = pal.ac;
+  ctx.fillRect(w * 0.62, 0, w * 0.38, h * 0.012);
+  ctx.fillRect(w * 0.62, 0, w * 0.012, h * 0.38);
+  ctx.restore();
 
   /* ghost number watermark */
   ctx.save();
-  ctx.font = `300 ${Math.round(w*0.13)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = pal.p; ctx.globalAlpha = 0.06; ctx.textAlign = 'right';
-  ctx.fillText(`0${idx+1}`, w - w*0.05, h * 0.3);
+  ctx.font = `800 ${Math.round(w * 0.38)}px Arial Black, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.06; ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}`, w + w*0.04, h * 0.68);
   ctx.restore();
 
-  /* brand name */
-  slideBrand(ctx, w, h, brand.name, pal.p);
+  /* brand name — top left, contrasted on primary */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+  ctx.fillText(brand.name.toUpperCase(), w*0.08, w*0.09);
+  ctx.restore();
 
-  /* headline — auto-wrap + auto-shrink */
+  /* headline */
   const hx = w * 0.08, hMaxW = w * 0.83;
-  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.105), 'Arial Black, sans-serif', slide.headline, hMaxW, 3, 22);
-  ctx.fillStyle = pal.nearBlack; ctx.textAlign = 'left';
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.12), 'Arial Black, sans-serif', slide.headline, hMaxW, 3, 24);
+  ctx.fillStyle = pal.onP; ctx.textAlign = 'left';
   ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
-  const hStartY = h * 0.36;
-  hLines.forEach((ln, i) => ctx.fillText(ln, hx, hStartY + i * hSz * 1.2));
+  const hStartY = h * 0.38;
+  hLines.forEach((ln, i) => ctx.fillText(ln, hx, hStartY + i * hSz * 1.18));
 
   /* accent rule */
-  const ruleY = hStartY + hLines.length * hSz * 1.2 - hSz * 0.35;
+  const ruleY = hStartY + hLines.length * hSz * 1.18 - hSz * 0.32;
   ctx.fillStyle = pal.ac;
-  ctx.fillRect(hx, ruleY, w * 0.2, Math.round(h * 0.005));
+  ctx.fillRect(hx, ruleY, w * 0.22, Math.round(h * 0.006));
 
-  /* subtitle — wrapped */
-  const subStartY = Math.min(ruleY + hSz * 0.85, h * 0.78);
+  /* subtitle */
+  const subStartY = Math.min(ruleY + hSz * 0.9, h * 0.8);
   const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.043), 'Inter, system-ui, sans-serif', slide.sub, hMaxW, 2, 14);
-  ctx.fillStyle = pal.mid; ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.7;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
   sLines.forEach((ln, i) => ctx.fillText(ln, hx, subStartY + i * sSz * 1.45));
+  ctx.globalAlpha = 1;
 
-  slideLabel(ctx, w, h, idx);
+  /* slide counter — use onP for contrast */
+  ctx.save();
+  ctx.font = `500 ${Math.round(w*0.032)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}  /  5`, w - w*0.06, h - w*0.045);
+  ctx.restore();
 }
 
-/* FEATURE — split panel: colored left, white right */
+/* FEATURE — accent left panel, brand bg right, headline in primary */
 function drawFeatureSlide(ctx, w, h, slide, idx, brand, pal) {
   const split = w * 0.38;
+  const onAc = isColorDark(pal.ac) ? '#FFFFFF' : '#111111';
+  const onBg = isColorDark(pal.bg) ? '#FFFFFF' : '#111111';
 
-  ctx.fillStyle = pal.p; ctx.fillRect(0, 0, split, h);
-  ctx.fillStyle = pal.nearWhite; ctx.fillRect(split, 0, w - split, h);
-  ctx.fillStyle = pal.ac; ctx.fillRect(split - 3, 0, 6, h);
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, split, h);
+  ctx.fillStyle = pal.bg; ctx.fillRect(split, 0, w - split, h);
+  /* divider in primary */
+  ctx.fillStyle = pal.p; ctx.fillRect(split - 3, 0, 6, h);
 
   /* ghost number on left */
   ctx.save();
   ctx.font = `800 ${Math.round(split * 0.5)}px Arial Black, sans-serif`;
-  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.12; ctx.textAlign = 'center';
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.12; ctx.textAlign = 'center';
   ctx.fillText(`${idx+1}`, split * 0.5, h * 0.65);
   ctx.restore();
 
   /* emoji on left */
   ctx.font = `${Math.round(split * 0.27)}px serif`;
-  ctx.fillStyle = pal.onP; ctx.textAlign = 'center'; ctx.globalAlpha = 1;
+  ctx.fillStyle = onAc; ctx.textAlign = 'center'; ctx.globalAlpha = 1;
   ctx.fillText(slide.emoji || '✦', split * 0.5, h * 0.47);
 
   /* brand on left panel bottom */
   ctx.save();
   ctx.font = `700 ${Math.round(w * 0.026)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
   ctx.fillText(brand.name.toUpperCase(), split * 0.5, h * 0.91);
   ctx.restore();
 
-  /* headline on right — auto-wrap */
+  /* headline on right — in primary color */
   const rx = split + w * 0.055, rMaxW = w - split - w * 0.075;
   const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.082), 'Arial Black, sans-serif', slide.headline, rMaxW, 3, 18);
-  ctx.fillStyle = pal.nearBlack; ctx.textAlign = 'left';
+  ctx.fillStyle = pal.p; ctx.textAlign = 'left';
   ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
   const hStartY = h * 0.34;
   hLines.forEach((ln, i) => ctx.fillText(ln, rx, hStartY + i * hSz * 1.22));
 
-  /* rule */
+  /* rule in accent */
   const ruleY = hStartY + hLines.length * hSz * 1.22 - hSz * 0.3;
   ctx.fillStyle = pal.ac; ctx.fillRect(rx, ruleY, rMaxW * 0.45, 3);
 
-  /* subtitle — wrapped */
+  /* subtitle — in onBg */
   const subY = Math.min(ruleY + hSz * 0.75, h * 0.8);
   const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.039), 'Inter, system-ui, sans-serif', slide.sub, rMaxW, 2, 13);
-  ctx.fillStyle = pal.mid; ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onBg; ctx.globalAlpha = 0.7;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
   sLines.forEach((ln, i) => ctx.fillText(ln, rx, subY + i * sSz * 1.45));
+  ctx.globalAlpha = 1;
 
   slideLabel(ctx, w, h, idx);
 }
 
-/* STAT — near-black bg, giant centered stat */
+/* STAT — dark bg, accent-colored giant number for maximum pop */
 function drawStatSlide(ctx, w, h, slide, idx, brand, pal) {
-  ctx.fillStyle = isColorDark(pal.p) ? pal.p : pal.nearBlack;
-  ctx.fillRect(0, 0, w, h);
+  const bg = isColorDark(pal.p) ? pal.p : pal.nearBlack;
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+
+  /* decorative corner accent */
+  ctx.save();
+  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.2;
+  ctx.fillRect(0, 0, w * 0.25, h * 0.008);
+  ctx.fillRect(0, 0, w * 0.008, h * 0.25);
+  ctx.fillRect(w * 0.75, h - h*0.008, w * 0.25, h * 0.008);
+  ctx.fillRect(w - w*0.008, h * 0.75, w * 0.008, h * 0.25);
+  ctx.restore();
 
   /* top accent bar */
   ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, w, Math.round(h * 0.009));
 
-  /* stat headline — auto-wrap centered */
+  /* stat headline in ACCENT color — maximum contrast + brand identity */
   const statMaxW = w * 0.84;
   const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.2), 'Arial Black, sans-serif', slide.headline, statMaxW, 2, 28);
-  ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'center';
+  ctx.fillStyle = pal.ac; ctx.textAlign = 'center';
   ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
   const hStartY = h * 0.47 - (hLines.length - 1) * hSz * 0.55;
   hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, hStartY + i * hSz * 1.12));
 
-  /* rule */
+  /* rule in accent */
   const ruleY = hStartY + hLines.length * hSz * 1.12 - hSz * 0.25;
-  ctx.fillStyle = pal.ac; ctx.fillRect(w * 0.3, ruleY, w * 0.4, 2);
+  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.4;
+  ctx.fillRect(w * 0.3, ruleY, w * 0.4, 2);
+  ctx.globalAlpha = 1;
 
-  /* subtitle — wrapped centered */
+  /* subtitle white */
   const subY = ruleY + Math.round(w * 0.06);
   const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.048), 'Inter, system-ui, sans-serif', slide.sub, statMaxW, 2, 14);
-  ctx.fillStyle = 'rgba(255,255,255,0.62)'; ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.65;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
   sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, subY + i * sSz * 1.4));
+  ctx.globalAlpha = 1;
 
-  /* brand bottom */
+  /* brand bottom in accent */
   ctx.save();
   ctx.font = `600 ${Math.round(w * 0.028)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.85;
+  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.7;
   ctx.fillText(brand.name.toUpperCase(), w * 0.5, h * 0.93);
   ctx.restore();
 }
 
-/* LIFESTYLE — horizontal split: color top, white bottom */
+/* LIFESTYLE — brand bg full background, primary headline, accent rule */
 function drawLifestyleSlide(ctx, w, h, slide, idx, brand, pal) {
-  const split = h * 0.52;
+  const onBg = isColorDark(pal.bg) ? '#FFFFFF' : pal.nearBlack;
 
-  ctx.fillStyle = isColorDark(pal.p) ? pal.p : pal.nearBlack;
-  ctx.fillRect(0, 0, w, split);
-  ctx.fillStyle = pal.nearWhite; ctx.fillRect(0, split, w, h - split);
-  ctx.fillStyle = pal.ac; ctx.fillRect(0, split - 3, w, 6);
+  /* full brand bg */
+  ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, w, h);
 
-  /* brand on top panel */
+  /* decorative accent band at top */
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, w, Math.round(h * 0.009));
+
+  /* large decorative circle (brand primary) */
   ctx.save();
-  ctx.font = `600 ${Math.round(w * 0.026)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.5; ctx.textAlign = 'center';
-  ctx.fillText(brand.name.toUpperCase(), w * 0.5, split * 0.12);
+  ctx.fillStyle = pal.p; ctx.globalAlpha = 0.08;
+  ctx.beginPath();
+  ctx.arc(w * 0.82, h * 0.28, w * 0.38, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
-  /* headline on top — wrapped centered */
+  /* brand name top */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.p; ctx.globalAlpha = 0.8; ctx.textAlign = 'left';
+  ctx.fillText(brand.name.toUpperCase(), w*0.08, w*0.09);
+  ctx.restore();
+
+  /* headline in primary — centered in upper half */
   const tMaxW = w * 0.82;
-  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.095), 'Arial Black, sans-serif', slide.headline, tMaxW, 2, 22);
-  ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'center';
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.1), 'Arial Black, sans-serif', slide.headline, tMaxW, 3, 22);
+  ctx.fillStyle = pal.p; ctx.textAlign = 'left';
   ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
-  const hStartY = split * 0.41;
-  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, hStartY + i * hSz * 1.18));
+  const hStartY = h * 0.32;
+  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, hStartY + i * hSz * 1.18));
 
-  /* subtitle on bottom — wrapped centered */
-  const bMaxW = w * 0.78;
-  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.044), 'Inter, system-ui, sans-serif', slide.sub, bMaxW, 3, 13);
-  ctx.fillStyle = pal.nearBlack; ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
-  const sStartY = split + (h - split) * 0.28;
-  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, sStartY + i * sSz * 1.4));
+  /* accent rule below headline */
+  const ruleY = hStartY + hLines.length * hSz * 1.18 - hSz * 0.3;
+  ctx.fillStyle = pal.ac; ctx.fillRect(w * 0.08, ruleY, w * 0.22, Math.round(h * 0.005));
 
-  /* accent underline */
-  const lastSubY = sStartY + sLines.length * sSz * 1.4 - sSz * 0.4;
-  ctx.fillStyle = pal.ac; ctx.fillRect(w * 0.35, lastSubY, w * 0.3, 3);
+  /* subtitle — in onBg */
+  const subY = Math.min(ruleY + hSz * 0.85, h * 0.8);
+  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.044), 'Inter, system-ui, sans-serif', slide.sub, tMaxW, 2, 14);
+  ctx.fillStyle = onBg; ctx.globalAlpha = 0.72;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, subY + i * sSz * 1.45));
+  ctx.globalAlpha = 1;
 
   slideLabel(ctx, w, h, idx);
 }
 
-/* CTA — clean white, strong CTA */
+/* CTA — accent bg full, contrasting headline, strong call to action */
 function drawCtaSlide(ctx, w, h, slide, idx, brand, pal) {
-  ctx.fillStyle = pal.nearWhite; ctx.fillRect(0, 0, w, h);
+  const onAc = isColorDark(pal.ac) ? '#FFFFFF' : '#111111';
+
+  /* full accent bg */
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, w, h);
+
+  /* top primary bar */
   ctx.fillStyle = pal.p; ctx.fillRect(0, 0, w, Math.round(h * 0.009));
 
-  slideBrand(ctx, w, h, brand.name, pal.p);
-
-  /* headline — wrapped centered */
-  const hMaxW = w * 0.82;
-  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.095), 'Arial Black, sans-serif', slide.headline, hMaxW, 3, 20);
-  ctx.fillStyle = pal.nearBlack; ctx.textAlign = 'center';
-  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
-  const hStartY = h * 0.33;
-  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, hStartY + i * hSz * 1.2));
-
-  /* accent rule */
-  const ruleY = hStartY + hLines.length * hSz * 1.2 - hSz * 0.2;
-  ctx.fillStyle = pal.ac; ctx.fillRect(w * 0.35, ruleY, w * 0.3, 3);
-
-  /* decorative arrow */
+  /* ghost large arrow bg */
   ctx.save();
-  ctx.font = `300 ${Math.round(w * 0.17)}px Inter, system-ui, sans-serif`;
-  ctx.fillStyle = pal.p; ctx.globalAlpha = 0.12;
-  ctx.fillText('→', w * 0.5, ruleY + Math.round(w * 0.22));
+  ctx.font = `800 ${Math.round(w * 0.55)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.06; ctx.textAlign = 'center';
+  ctx.fillText('→', w * 0.5, h * 0.72);
   ctx.restore();
-  ctx.fillStyle = pal.p; ctx.font = `600 ${Math.round(w * 0.065)}px Inter, system-ui, sans-serif`;
-  ctx.fillText('→', w * 0.5, ruleY + Math.round(w * 0.22));
 
-  /* subtitle / CTA text — wrapped */
-  const subY = Math.min(ruleY + Math.round(w * 0.28), h * 0.86);
+  /* brand name */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+  ctx.fillText(brand.name.toUpperCase(), w*0.08, w*0.09);
+  ctx.restore();
+
+  /* headline — contrasting on accent */
+  const hMaxW = w * 0.82;
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.1), 'Arial Black, sans-serif', slide.headline, hMaxW, 3, 20);
+  ctx.fillStyle = onAc; ctx.textAlign = 'left';
+  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
+  const hStartY = h * 0.3;
+  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, hStartY + i * hSz * 1.18));
+
+  /* primary rule */
+  const ruleY = hStartY + hLines.length * hSz * 1.18 - hSz * 0.32;
+  ctx.fillStyle = pal.p;
+  ctx.fillRect(w * 0.08, ruleY, w * 0.2, Math.round(h * 0.005));
+
+  /* visible arrow in primary */
+  const arrY = Math.min(ruleY + hSz * 1.2, h * 0.74);
+  ctx.fillStyle = pal.p;
+  ctx.font = `700 ${Math.round(w * 0.1)}px Inter, system-ui, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText('→', w * 0.08, arrY);
+
+  /* subtitle / CTA */
+  const subY = Math.min(arrY + Math.round(w * 0.14), h * 0.88);
   const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.041), 'Inter, system-ui, sans-serif', slide.sub, hMaxW, 2, 13);
-  ctx.fillStyle = pal.mid; ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
-  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, subY + i * sSz * 1.4));
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.72;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, subY + i * sSz * 1.4));
+  ctx.globalAlpha = 1;
 
-  slideLabel(ctx, w, h, idx);
+  /* slide counter */
+  ctx.save();
+  ctx.font = `500 ${Math.round(w*0.032)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}  /  5`, w - w*0.06, h - w*0.045);
+  ctx.restore();
 }
 
 /* ════════════════════════════════════════════════════
