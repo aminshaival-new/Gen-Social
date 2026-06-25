@@ -1387,7 +1387,8 @@ function autoFit(ctx, weight, startPx, family, text, maxW, maxLines, minPx = 12)
   for (let s = startPx; s >= minPx; s = Math.max(minPx, Math.floor(s * 0.87))) {
     ctx.font = `${weight} ${s}px ${family}`;
     const lines = wrapText(ctx, text, maxW);
-    if (lines.length <= maxLines) return { lines, s };
+    const allFit = lines.every(ln => ctx.measureText(ln).width <= maxW);
+    if (lines.length <= maxLines && allFit) return { lines, s };
     if (s === minPx) return { lines, s };
   }
   ctx.font = `${weight} ${minPx}px ${family}`;
