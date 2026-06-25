@@ -1259,17 +1259,17 @@ a { color: inherit; text-decoration: none; }
 ════════════════════════════════════════════════════ */
 const state = {
   brand: {
-    name: 'poppi',
-    primaryColor: '#FF2D6B',
-    accentColor: '#FFE000',
+    name: 'Brand',
+    primaryColor: '#111111',
+    accentColor: '#F04E00',
     bgColor: '#FFFFFF',
     font: 'Plus Jakarta Sans',
-    vibes: ['Vibrant','Playful','Bold','Health-forward'],
+    vibes: ['Minimal','Premium','Bold'],
     photos: [
-      { gradient: ['#FF2D6B','#FF85A1'], label: 'Strawberry Lemon' },
-      { gradient: ['#FFE000','#FFB700'], label: 'Tropical Mango'   },
-      { gradient: ['#7B61FF','#B48AF7'], label: 'Grape'            },
-      { gradient: ['#00C9A7','#00E4BF'], label: 'Watermelon'       },
+      { gradient: ['#111111','#333333'], label: 'Sample 1' },
+      { gradient: ['#F04E00','#FF8150'], label: 'Sample 2' },
+      { gradient: ['#4B5563','#6B7280'], label: 'Sample 3' },
+      { gradient: ['#2563EB','#60A5FA'], label: 'Sample 4' },
     ]
   },
   posts: [],
@@ -1790,15 +1790,20 @@ async function makeImages(pi) {
 
 function buildImagePrompt(slide, post, brand) {
   const typeStyle = {
-    cover:     'vibrant hero soda can photography, bold colour pop, Gen Z aesthetic, dynamic splash',
-    feature:   'clean product flat lay, colourful pastel background, poppi soda can centred, studio light',
-    stat:      'bold graphic composition, hot pink and yellow high saturation, strong visual energy',
-    lifestyle: 'bright lifestyle photography, trendy young people enjoying drinks outdoors, natural light',
-    cta:       'colourful soda can arrangement, fun energetic mood, Instagram-ready square format'
+    cover:     'hero visual with bold composition, strong focal point, premium marketing creative',
+    feature:   'clean product or feature highlight, professional showcase layout, studio quality',
+    stat:      'bold data visualization or infographic style, high-contrast graphic composition, striking numbers',
+    lifestyle: 'aspirational lifestyle scene, professional photography style, natural and authentic mood',
+    cta:       'action-oriented marketing creative, eye-catching arrangement, clear visual hierarchy'
   };
-  const vibes = (brand.vibes || ['Premium']).join(' ');
-  const base  = slide.imagePrompt || `${slide.type} slide visual for ${brand.name}`;
-  return `${base}. Style: ${typeStyle[slide.type] || 'editorial'}, ${vibes} brand aesthetic, Instagram square 1:1 format, professional quality. No text, no typography in the image.`;
+  const vibes = (brand.vibes || ['Professional']).join(', ');
+  const style = typeStyle[slide.type] || 'editorial marketing visual';
+  const colors = `Brand colors: ${brand.primaryColor} and ${brand.accentColor}`;
+
+  if (slide.imagePrompt) {
+    return `${slide.imagePrompt}. ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.`;
+  }
+  return `${slide.type} slide visual for ${brand.name} (${vibes} aesthetic). ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.`;
 }
 
 /* ════════════════════════════════════════════════════
@@ -2144,19 +2149,39 @@ function renderPhotosGrid() {
     <div class="photo-add" onclick="uploadPhoto()">
       <span class="photo-add-icon">+</span><span>Upload</span>
     </div>`;
+
+  const badge = document.querySelector('.detected-badge');
+  if (badge) badge.textContent = `✓ ${state.brand.photos.length} found`;
+
   state.brand.photos.forEach((p,i) => {
     const c = document.getElementById(`photo-canvas-${i}`);
     if (!c) return;
     const ctx = c.getContext('2d');
-    const g = ctx.createLinearGradient(0,0,160,160);
-    g.addColorStop(0, p.gradient[0]); g.addColorStop(1, p.gradient[1]);
-    ctx.fillStyle = g; ctx.fillRect(0,0,160,160);
-    /* orange accent dot */
-    ctx.fillStyle = hexToRgba(ORANGE, 0.5);
-    ctx.fillRect(0,0,4,160);
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(p.label, 80, 130);
+
+    if (p.src) {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.max(160 / img.width, 160 / img.height);
+        const sw = img.width * scale, sh = img.height * scale;
+        const sx = (160 - sw) / 2, sy = (160 - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh);
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.fillRect(0, 125, 160, 35);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(p.label, 80, 146);
+      };
+      img.src = p.src;
+    } else {
+      const g = ctx.createLinearGradient(0,0,160,160);
+      g.addColorStop(0, p.gradient[0]); g.addColorStop(1, p.gradient[1]);
+      ctx.fillStyle = g; ctx.fillRect(0,0,160,160);
+      ctx.fillStyle = hexToRgba(state.brand.accentColor || '#F04E00', 0.5);
+      ctx.fillRect(0,0,4,160);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(p.label, 80, 130);
+    }
   });
 }
 
