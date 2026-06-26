@@ -101,6 +101,48 @@ app.get('/api/config-status', (_req, res) => {
   });
 });
 
+/* ─── helpers ────────────────────────────────────────────────── */
+function extractImages(html, baseUrl) {
+  const found = new Set();
+
+  // OG / Twitter meta images (highest quality, intentional brand imagery)
+  const metaRe = /<meta[^>]+(?:property=["']og:image["']|name=["']twitter:image["'])[^>]+content=["']([^"']+)["']/gi;
+  const metaRe2 = /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property=["']og:image["']|name=["']twitter:image["'])/gi;
+  for (const re of [metaRe, metaRe2]) {
+    let m;
+    while ((m = re.exec(html)) !== null) found.add(m[1]);
+  }
+
+  // <img src> tags — skip icons/favicons/logos/svgs
+  const imgRe = /<img[^>]+src=["']([^"']+)["']/gi;
+  let m;
+  while ((m = imgRe.exec(html)) !== null) {
+    const src = m[1];
+    if (/favicon|\.svg|logo|icon/i.test(src)) continue;
+    found.add(src);
+  }
+
+  // Also check data-src for lazy-loaded images
+  const lazRe = /<img[^>]+data-src=["']([^"']+)["']/gi;
+  while ((m = lazRe.exec(html)) !== null) {
+    const src = m[1];
+    if (/favicon|\.svg|logo|icon/i.test(src)) continue;
+    found.add(src);
+  }
+
+  // Resolve to absolute URLs and return up to 6
+  const base = new URL(baseUrl);
+  const results = [];
+  for (const src of found) {
+    try {
+      const abs = new URL(src, base).href;
+      if (abs.startsWith('http')) results.push(abs);
+      if (results.length >= 6) break;
+    } catch (_) {}
+  }
+  return results;
+}
+
 /* ─── POST /api/brand-analyze ────────────────────────────────── */
 app.post('/api/brand-analyze', async (req, res) => {
   try {
@@ -108,12 +150,14 @@ app.post('/api/brand-analyze', async (req, res) => {
     const { url } = req.body;
 
     let siteText = `Website: ${url}`;
+    let imageUrls = [];
     try {
       const page = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BrandBot/1.0)' },
         signal: AbortSignal.timeout(8000)
       });
       const html = await page.text();
+      imageUrls = extractImages(html, url);
       siteText = html
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -142,7 +186,7 @@ Return exactly:
     }], 512);
 
     const brand = parseJSON(getText(data));
-    res.json({ brand });
+    res.json({ brand, imageUrls });
   } catch (err) {
     console.error('/api/brand-analyze', err.message);
     res.status(500).json({ error: err.message });
@@ -226,24 +270,49 @@ Write a fresh, engaging caption. Keep the brand voice. Include 1-2 emojis. End w
   }
 });
 
+/* ─── POST /api/proxy-image ──────────────────────────────────── */
+app.post('/api/proxy-image', async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'url required' });
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BrandBot/1.0)' },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!r.ok) return res.status(400).json({ error: `fetch failed: ${r.status}` });
+    const mime = r.headers.get('content-type') || '';
+    if (!mime.startsWith('image/')) return res.status(400).json({ error: 'Not an image' });
+    const buf = await r.arrayBuffer();
+    if (buf.byteLength > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image too large' });
+    res.json({ imageUrl: `data:${mime};base64,${Buffer.from(buf).toString('base64')}` });
+  } catch (err) {
+    console.error('/api/proxy-image', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ─── POST /api/generate-image  (Fal AI — GPT Image 2) ──────── */
 app.post('/api/generate-image', async (req, res) => {
   try {
     if (!requireKey(res, 'FAL_KEY')) return;
-    const { prompt } = req.body;
+    const { prompt, referenceImages } = req.body;
+    const hasRefs = Array.isArray(referenceImages) && referenceImages.length > 0;
 
-    const r = await fetch('https://fal.run/openai/gpt-image-2', {
+    // Use image-to-image edit endpoint when reference photos are provided
+    const endpoint = hasRefs
+      ? 'https://fal.run/openai/gpt-image-2/edit'
+      : 'https://fal.run/openai/gpt-image-2';
+
+    const payload = { prompt, image_size: 'square_hd', quality: 'high', num_images: 1 };
+    if (hasRefs) payload.image_urls = referenceImages;
+
+    const r = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
         'Authorization': `Key ${process.env.FAL_KEY}`
       },
-      body: JSON.stringify({
-        prompt,
-        image_size: 'square_hd',
-        quality: 'high',
-        num_images: 1
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(120_000)
     });
 

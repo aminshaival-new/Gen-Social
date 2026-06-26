@@ -1265,12 +1265,7 @@ const state = {
     bgColor: '#FFFFFF',
     font: 'Plus Jakarta Sans',
     vibes: ['Minimal','Premium','Bold'],
-    photos: [
-      { gradient: ['#111111','#333333'], label: 'Sample 1' },
-      { gradient: ['#F04E00','#FF8150'], label: 'Sample 2' },
-      { gradient: ['#4B5563','#6B7280'], label: 'Sample 3' },
-      { gradient: ['#2563EB','#60A5FA'], label: 'Sample 4' },
-    ]
+    photos: []
   },
   posts: [],
   scheduledPosts: [],
@@ -1817,16 +1812,20 @@ async function makeImages(pi) {
   if (progress) progress.classList.add('active');
 
   try {
+    const refPhotos = state.brand.photos.filter(p => p.src && p.selected !== false).map(p => p.src);
+
     for (let si = 0; si < post.slides.length; si++) {
       const slide = post.slides[si];
       const pct   = Math.round((si / post.slides.length) * 100);
       if (bar) bar.style.width = pct + '%';
 
-      const fullPrompt = buildImagePrompt(slide, post, state.brand);
+      const hasRef = refPhotos.length > 0;
+      const fullPrompt = buildImagePrompt(slide, post, state.brand, hasRef);
+      const referenceImages = hasRef ? [refPhotos[si % refPhotos.length]] : [];
       const res = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: fullPrompt })
+        body: JSON.stringify({ prompt: fullPrompt, referenceImages })
       });
 
       if (!res.ok) {
@@ -1856,7 +1855,7 @@ async function makeImages(pi) {
   }
 }
 
-function buildImagePrompt(slide, post, brand) {
+function buildImagePrompt(slide, post, brand, hasRef = false) {
   const typeStyle = {
     cover:     'hero visual with bold composition, strong focal point, premium marketing creative',
     feature:   'clean product or feature highlight, professional showcase layout, studio quality',
@@ -1867,11 +1866,12 @@ function buildImagePrompt(slide, post, brand) {
   const vibes = (brand.vibes || ['Professional']).join(', ');
   const style = typeStyle[slide.type] || 'editorial marketing visual';
   const colors = `Brand colors: ${brand.primaryColor} and ${brand.accentColor}`;
+  const refNote = hasRef ? ' Use the reference product photo as visual inspiration for style and product appearance.' : '';
 
   if (slide.imagePrompt) {
-    return `${slide.imagePrompt}. ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.`;
+    return `${slide.imagePrompt}. ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.${refNote}`;
   }
-  return `${slide.type} slide visual for ${brand.name} (${vibes} aesthetic). ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.`;
+  return `${slide.type} slide visual for ${brand.name} (${vibes} aesthetic). ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.${refNote}`;
 }
 
 /* ════════════════════════════════════════════════════
@@ -2120,12 +2120,12 @@ async function fetchBrand() {
 
   /* Known brands — instant local fallback */
   const localBrands = {
-    poppi:     { name:'poppi',     primaryColor:'#FF2D6B', accentColor:'#FFE000', bgColor:'#FFFFFF', font:'Plus Jakarta Sans', vibes:['Vibrant','Playful','Bold','Health-forward'], pg:[['#FF2D6B','#FF85A1'],['#FFE000','#FFB700'],['#7B61FF','#B48AF7'],['#00C9A7','#00E4BF']] },
-    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',           vibes:['Minimal','Sustainable','Natural'],            pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
-    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',       vibes:['Bold','Athletic','Energetic'],                pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
-    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',    vibes:['Minimal','Tech','Premium'],                   pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
-    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',           vibes:['Outdoor','Sustainable','Rugged'],             pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
-    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',         vibes:['Minimal','Beauty','Soft'],                    pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
+    poppi:     { name:'poppi',     primaryColor:'#FF2D6B', accentColor:'#FFE000', bgColor:'#FFFFFF', font:'Plus Jakarta Sans', vibes:['Vibrant','Playful','Bold','Health-forward'], photos:[] },
+    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',           vibes:['Minimal','Sustainable','Natural'],            photos:[] },
+    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',       vibes:['Bold','Athletic','Energetic'],                photos:[] },
+    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',    vibes:['Minimal','Tech','Premium'],                   photos:[] },
+    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',           vibes:['Outdoor','Sustainable','Rugged'],             photos:[] },
+    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',         vibes:['Minimal','Beauty','Soft'],                    photos:[] },
   };
 
   const localKey = Object.keys(localBrands).find(k => url.toLowerCase().includes(k));
@@ -2142,14 +2142,29 @@ async function fetchBrand() {
       body: JSON.stringify({ url })
     });
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
-    const { brand } = await res.json();
-    /* Give it placeholder photos based on extracted colours */
-    brand.pg = [
-      [brand.primaryColor, brand.accentColor],
-      [brand.accentColor,  brand.bgColor],
-      [brand.bgColor,      brand.primaryColor],
-      [brand.primaryColor, brand.bgColor]
-    ];
+    const { brand, imageUrls } = await res.json();
+
+    /* Proxy brand images to base64 so they can render in canvas */
+    if (imageUrls && imageUrls.length) {
+      const settled = await Promise.allSettled(
+        imageUrls.map(async (imgUrl, i) => {
+          const r = await fetch('/api/proxy-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: imgUrl })
+          });
+          if (!r.ok) throw new Error('proxy failed');
+          const { imageUrl } = await r.json();
+          return { src: imageUrl, label: `Brand Photo ${i + 1}`, selected: true };
+        })
+      );
+      brand.photos = settled
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value);
+    } else {
+      brand.photos = [];
+    }
+
     applyBrandKit(brand, btn);
   } catch (err) {
     /* Generic fallback */
@@ -2157,8 +2172,7 @@ async function fetchBrand() {
     applyBrandKit({
       name: domain.charAt(0).toUpperCase() + domain.slice(1),
       primaryColor: '#111111', accentColor: '#F04E00', bgColor: '#F6F2EC',
-      font: 'Georgia', vibes: ['Minimal', 'Modern'],
-      pg:[['#F04E00','#ff8150'],['#111','#333'],['#F6F2EC','#fff'],['#888','#aaa']]
+      font: 'Georgia', vibes: ['Minimal', 'Modern'], photos: []
     }, btn);
     toast(`Brand AI error: ${err.message || 'check OPENROUTER_API_KEY in Railway'} — used fallback`, 'info');
   }
@@ -2168,7 +2182,7 @@ function applyBrandKit(b, btn) {
   state.brand.name = b.name; state.brand.primaryColor = b.primaryColor;
   state.brand.accentColor = b.accentColor; state.brand.bgColor = b.bgColor;
   state.brand.font = b.font; state.brand.vibes = b.vibes || [];
-  state.brand.photos = (b.pg || []).map((g, i) => ({ gradient: g, label: `Photo ${i+1}` }));
+  state.brand.photos = (b.photos || []).map(p => ({ src: p.src, label: p.label, selected: true }));
   document.getElementById('brandMetaName').textContent = b.name;
   btn.textContent = '→ Load'; btn.disabled = false;
   renderBrandPanel();
@@ -2211,7 +2225,7 @@ function renderVibeTags() {
 function renderPhotosGrid() {
   const grid = document.getElementById('photosGrid');
   grid.innerHTML = state.brand.photos.map((p,i) => `
-    <div class="photo-item selected" onclick="togglePhoto(this,${i})" id="photo-${i}">
+    <div class="photo-item${p.selected !== false ? ' selected' : ''}" onclick="togglePhoto(this,${i})" id="photo-${i}">
       <canvas id="photo-canvas-${i}" width="160" height="160"></canvas>
     </div>`).join('') + `
     <div class="photo-add" onclick="uploadPhoto()">
@@ -2219,7 +2233,9 @@ function renderPhotosGrid() {
     </div>`;
 
   const badge = document.querySelector('.detected-badge');
-  if (badge) badge.textContent = `✓ ${state.brand.photos.length} found`;
+  if (badge) badge.textContent = state.brand.photos.length
+    ? `✓ ${state.brand.photos.length} photos`
+    : 'Upload photos';
 
   state.brand.photos.forEach((p,i) => {
     const c = document.getElementById(`photo-canvas-${i}`);
@@ -2240,15 +2256,6 @@ function renderPhotosGrid() {
         ctx.fillText(p.label, 80, 146);
       };
       img.src = p.src;
-    } else {
-      const g = ctx.createLinearGradient(0,0,160,160);
-      g.addColorStop(0, p.gradient[0]); g.addColorStop(1, p.gradient[1]);
-      ctx.fillStyle = g; ctx.fillRect(0,0,160,160);
-      ctx.fillStyle = hexToRgba(state.brand.accentColor || '#F04E00', 0.5);
-      ctx.fillRect(0,0,4,160);
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(p.label, 80, 130);
     }
   });
 }
@@ -2271,14 +2278,18 @@ function toggleVibe(el) {
   el.classList.toggle('active');
   state.brand.vibes = Array.from(document.querySelectorAll('.vibe-tag.active')).map(t => t.textContent);
 }
-function togglePhoto(el) { el.classList.toggle('selected'); }
+function togglePhoto(el, idx) {
+  el.classList.toggle('selected');
+  if (state.brand.photos[idx] !== undefined)
+    state.brand.photos[idx].selected = el.classList.contains('selected');
+}
 function uploadPhoto() {
   const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
   inp.addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return;
     const r = new FileReader();
     r.onload = ev => {
-      state.brand.photos.push({src:ev.target.result, gradient:['#666','#999'], label:f.name.split('.')[0]});
+      state.brand.photos.push({src:ev.target.result, label:f.name.split('.')[0], selected:true});
       renderPhotosGrid(); toast('Photo uploaded ✓','success');
     };
     r.readAsDataURL(f);
