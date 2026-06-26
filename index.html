@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>poppi Studio — Content Creator</title>
+<title>Gen Social — Content Creator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1031,7 +1031,7 @@ a { color: inherit; text-decoration: none; }
 <header class="topbar">
   <div class="topbar-brand">
     <div class="topbar-logo">p</div>
-    <div class="topbar-name">poppi <span>Studio</span></div>
+    <div class="topbar-name">Gen <span>Social</span></div>
   </div>
 
   <div class="topbar-pills">
@@ -1259,18 +1259,13 @@ a { color: inherit; text-decoration: none; }
 ════════════════════════════════════════════════════ */
 const state = {
   brand: {
-    name: 'poppi',
-    primaryColor: '#FF2D6B',
-    accentColor: '#FFE000',
+    name: 'Brand',
+    primaryColor: '#111111',
+    accentColor: '#F04E00',
     bgColor: '#FFFFFF',
     font: 'Plus Jakarta Sans',
-    vibes: ['Vibrant','Playful','Bold','Health-forward'],
-    photos: [
-      { gradient: ['#FF2D6B','#FF85A1'], label: 'Strawberry Lemon' },
-      { gradient: ['#FFE000','#FFB700'], label: 'Tropical Mango'   },
-      { gradient: ['#7B61FF','#B48AF7'], label: 'Grape'            },
-      { gradient: ['#00C9A7','#00E4BF'], label: 'Watermelon'       },
-    ]
+    vibes: ['Minimal','Premium','Bold'],
+    photos: []
   },
   posts: [],
   scheduledPosts: [],
@@ -1360,283 +1355,352 @@ const SAMPLE_POSTS = [
    black / off-white / orange accent only.
 ════════════════════════════════════════════════════ */
 
-const ORANGE = '#FF2D6B';  // poppi hot pink
-const CREAM  = '#FFF5F8';  // pale pink-white
-const BLACK  = '#1C1C1E';  // near-black
-const WHITE  = '#FFFFFF';  // pure white
+function isColorDark(hex) {
+  try {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return (r*299 + g*587 + b*114) / 1000 < 140;
+  } catch(_) { return true; }
+}
+
+function wrapText(ctx, text, maxW) {
+  const out = [];
+  for (const para of text.split('\n')) {
+    if (!para.trim()) continue;
+    const words = para.split(/\s+/);
+    let line = '';
+    for (const word of words) {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && line) { out.push(line); line = word; }
+      else line = test;
+    }
+    if (line) out.push(line);
+  }
+  return out.length ? out : [''];
+}
+
+function autoFit(ctx, weight, startPx, family, text, maxW, maxLines, minPx = 12) {
+  for (let s = startPx; s >= minPx; s = Math.max(minPx, Math.floor(s * 0.87))) {
+    ctx.font = `${weight} ${s}px ${family}`;
+    const lines = wrapText(ctx, text, maxW);
+    const allFit = lines.every(ln => ctx.measureText(ln).width <= maxW);
+    if (lines.length <= maxLines && allFit) return { lines, s };
+    if (s === minPx) return { lines, s };
+  }
+  ctx.font = `${weight} ${minPx}px ${family}`;
+  return { lines: wrapText(ctx, text, maxW), s: minPx };
+}
 
 function drawSlide(canvas, slide, idx, brand) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  /* Real generated image — draw it and return */
   if (slide.imageUrl) {
-    if (slide._img) {
-      ctx.drawImage(slide._img, 0, 0, w, h);
-      return;
-    }
-    /* Start loading; draw a placeholder, re-draw when ready */
-    ctx.fillStyle = BLACK;
+    if (slide._img) { ctx.drawImage(slide._img, 0, 0, w, h); return; }
+    ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = hexToRgba(ORANGE, 0.25);
-    ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = hexToRgba(WHITE, 0.6);
-    ctx.font = `600 ${w * 0.045}px Inter, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText('Loading image…', w / 2, h / 2);
     const img = new Image();
-    img.onload = () => {
-      slide._img = img;
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0, w, h);
-    };
+    img.onload = () => { slide._img = img; ctx.clearRect(0,0,w,h); ctx.drawImage(img,0,0,w,h); };
     img.src = slide.imageUrl;
     return;
   }
 
-  const designs = {
-    cover:     drawCoverSlide,
-    feature:   drawFeatureSlide,
-    stat:      drawStatSlide,
-    lifestyle: drawLifestyleSlide,
-    cta:       drawCtaSlide
-  };
-  (designs[slide.type] || drawFeatureSlide)(ctx, w, h, slide, idx, brand);
+  const p  = brand.primaryColor || '#111111';
+  const ac = brand.accentColor  || '#E85D26';
+  const bg = brand.bgColor      || '#FFFFFF';
+  const darkPrimary = isColorDark(p);
+  const onP  = darkPrimary ? '#FFFFFF' : '#111111';
+
+  const pal = { p, ac, bg, onP,
+    dark: '#0D0D0D', mid: '#888888', light: '#FFFFFF',
+    nearWhite: '#F8F8F6', nearBlack: '#111111' };
+
+  const designs = { cover: drawCoverSlide, feature: drawFeatureSlide, stat: drawStatSlide, lifestyle: drawLifestyleSlide, cta: drawCtaSlide };
+  (designs[slide.type] || drawFeatureSlide)(ctx, w, h, slide, idx, brand, pal);
 }
 
-/* Dotted texture helper */
-function drawDotTexture(ctx, w, h, color, spacing=18) {
+function slideLabel(ctx, w, h, idx) {
   ctx.save();
+  ctx.font = `500 ${Math.round(w*0.032)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = 'rgba(128,128,128,0.5)';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}  /  5`, w - w*0.06, h - w*0.045);
+  ctx.restore();
+}
+
+function slideBrand(ctx, w, h, name, color) {
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
   ctx.fillStyle = color;
-  for (let x = spacing; x < w; x += spacing) {
-    for (let y = spacing; y < h; y += spacing) {
-      ctx.beginPath();
-      ctx.arc(x, y, 1, 0, Math.PI*2);
-      ctx.fill();
-    }
-  }
-  ctx.restore();
-}
-
-/* Shared slide chrome */
-function drawBrandTag(ctx, x, y, name) {
-  ctx.save();
-  ctx.font = `700 10px Inter, sans-serif`;
-  const tw = ctx.measureText(name).width;
-  const pw = 10, ph = 5, rh = 20;
-  ctx.fillStyle = ORANGE;
-  ctx.fillRect(x, y, tw + pw*2, rh);
-  ctx.fillStyle = '#fff';
   ctx.textAlign = 'left';
-  ctx.fillText(name, x + pw, y + rh * 0.68);
+  ctx.globalAlpha = 0.8;
+  ctx.fillText(name.toUpperCase(), w*0.06, w*0.065);
   ctx.restore();
 }
 
-function drawSlideNumber(ctx, w, h, idx, total) {
-  ctx.save();
-  ctx.font = `600 10px Inter, sans-serif`;
-  ctx.fillStyle = hexToRgba(BLACK, 0.4);
-  ctx.textAlign = 'right';
-  ctx.fillText(`${idx+1} / ${total}`, w - 16, h - 14);
-  ctx.restore();
-}
-
-function drawNavDots(ctx, w, h, idx, total, color) {
-  const r = 3, gap = 8;
-  const total_w = total * r*2 + (total-1)*gap;
-  const sx = (w - total_w) / 2;
-  const y = h - 16;
-  for (let i = 0; i < total; i++) {
-    ctx.beginPath();
-    ctx.arc(sx + i*(r*2+gap) + r, y, i===idx ? r+1 : r-1, 0, Math.PI*2);
-    ctx.fillStyle = i===idx ? color : hexToRgba(color, 0.3);
-    ctx.fill();
-  }
-}
-
-/* COVER — dark background, big headline, orange rule */
-function drawCoverSlide(ctx, w, h, slide, idx, brand) {
-  /* bg */
-  ctx.fillStyle = BLACK;
+/* COVER — bold primary bg, white text, strong first impression */
+function drawCoverSlide(ctx, w, h, slide, idx, brand, pal) {
+  /* full primary bg */
+  ctx.fillStyle = pal.p;
   ctx.fillRect(0, 0, w, h);
-  drawDotTexture(ctx, w, h, 'rgba(255,255,255,0.04)');
 
-  /* orange accent strip */
-  ctx.fillStyle = ORANGE;
-  ctx.fillRect(0, h * 0.46, w, 5);
+  /* subtle diagonal accent strip top-right */
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = pal.ac;
+  ctx.fillRect(w * 0.62, 0, w * 0.38, h * 0.012);
+  ctx.fillRect(w * 0.62, 0, w * 0.012, h * 0.38);
+  ctx.restore();
 
-  /* emoji */
-  ctx.font = `${w * 0.14}px serif`;
-  ctx.textAlign = 'left';
-  ctx.fillText(slide.emoji, w * 0.07, h * 0.34);
+  /* ghost number watermark */
+  ctx.save();
+  ctx.font = `800 ${Math.round(w * 0.38)}px Arial Black, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.06; ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}`, w + w*0.04, h * 0.68);
+  ctx.restore();
+
+  /* brand name — top left, contrasted on primary */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+  ctx.fillText(brand.name.toUpperCase(), w*0.08, w*0.09);
+  ctx.restore();
 
   /* headline */
-  ctx.fillStyle = WHITE;
-  ctx.font = `800 ${w * 0.12}px Syne, Arial Black, sans-serif`;
-  slide.headline.split('\n').forEach((ln, i) =>
-    ctx.fillText(ln, w * 0.07, h * 0.5 + i * w * 0.13)
-  );
+  const hx = w * 0.08, hMaxW = w * 0.83;
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.12), 'Arial Black, sans-serif', slide.headline, hMaxW, 3, 24);
+  ctx.fillStyle = pal.onP; ctx.textAlign = 'left';
+  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
+  const hStartY = h * 0.38;
+  hLines.forEach((ln, i) => ctx.fillText(ln, hx, hStartY + i * hSz * 1.18));
 
-  /* sub */
-  ctx.fillStyle = hexToRgba(WHITE, 0.5);
-  ctx.font = `500 ${w * 0.052}px Inter, sans-serif`;
-  ctx.fillText(slide.sub, w * 0.07, h * 0.78);
+  /* accent rule */
+  const ruleY = hStartY + hLines.length * hSz * 1.18 - hSz * 0.32;
+  ctx.fillStyle = pal.ac;
+  ctx.fillRect(hx, ruleY, w * 0.22, Math.round(h * 0.006));
 
-  drawBrandTag(ctx, w * 0.07, h * 0.07, brand.name);
-  drawNavDots(ctx, w, h, idx, 5, ORANGE);
-}
+  /* subtitle */
+  const subStartY = Math.min(ruleY + hSz * 0.9, h * 0.8);
+  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.043), 'Inter, system-ui, sans-serif', slide.sub, hMaxW, 2, 14);
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.7;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, hx, subStartY + i * sSz * 1.45));
+  ctx.globalAlpha = 1;
 
-/* FEATURE — cream bg, big emoji, bold text, left orange bar */
-function drawFeatureSlide(ctx, w, h, slide, idx, brand) {
-  ctx.fillStyle = CREAM;
-  ctx.fillRect(0, 0, w, h);
-  drawDotTexture(ctx, w, h, 'rgba(0,0,0,0.05)');
-
-  /* left bar */
-  ctx.fillStyle = ORANGE;
-  ctx.fillRect(0, 0, 5, h);
-
-  /* hard shadow box in upper right */
-  const bx = w * 0.62, by = w * 0.05, bsz = w * 0.25;
-  ctx.fillStyle = hexToRgba(BLACK, 0.06);
-  ctx.fillRect(bx + 4, by + 4, bsz, bsz);
-  ctx.fillStyle = WHITE;
-  ctx.fillRect(bx, by, bsz, bsz);
-  ctx.strokeStyle = hexToRgba(BLACK, 0.12);
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(bx, by, bsz, bsz);
-  ctx.font = `${bsz * 0.55}px serif`;
-  ctx.textAlign = 'center';
-  ctx.fillStyle = BLACK;
-  ctx.fillText(slide.emoji, bx + bsz * 0.5, by + bsz * 0.72);
-
-  /* headline */
-  ctx.fillStyle = BLACK;
-  ctx.font = `800 ${w * 0.105}px Syne, Arial Black, sans-serif`;
-  ctx.textAlign = 'left';
-  slide.headline.split('\n').forEach((ln, i) =>
-    ctx.fillText(ln, w * 0.08, h * 0.46 + i * w * 0.115)
-  );
-
-  /* sub */
-  ctx.fillStyle = hexToRgba(BLACK, 0.45);
-  ctx.font = `500 ${w * 0.05}px Inter, sans-serif`;
-  ctx.fillText(slide.sub, w * 0.08, h * 0.74);
-
-  drawBrandTag(ctx, w * 0.08, h * 0.85, brand.name);
-  drawSlideNumber(ctx, w, h, idx, 5);
-}
-
-/* STAT — orange background, huge number */
-function drawStatSlide(ctx, w, h, slide, idx, brand) {
-  ctx.fillStyle = ORANGE;
-  ctx.fillRect(0, 0, w, h);
-  drawDotTexture(ctx, w, h, 'rgba(0,0,0,0.08)');
-
-  /* stat */
-  ctx.fillStyle = WHITE;
-  ctx.font = `800 ${w * 0.26}px Syne, Arial Black, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText(slide.headline, w * 0.5, h * 0.52);
-
-  /* rule */
-  ctx.fillStyle = hexToRgba(WHITE, 0.35);
-  ctx.fillRect(w * 0.12, h * 0.57, w * 0.76, 2);
-
-  /* sub */
-  ctx.fillStyle = hexToRgba(WHITE, 0.85);
-  ctx.font = `500 ${w * 0.054}px Inter, sans-serif`;
-  ctx.fillText(slide.sub, w * 0.5, h * 0.68);
-
-  /* emoji corner */
-  ctx.font = `${w * 0.09}px serif`;
-  ctx.textAlign = 'right';
-  ctx.fillStyle = hexToRgba(WHITE, 0.7);
-  ctx.fillText(slide.emoji, w - 20, 46);
-
-  ctx.textAlign = 'left';
-  drawBrandTag(ctx, 20, 20, brand.name);
-  drawNavDots(ctx, w, h, idx, 5, WHITE);
-}
-
-/* LIFESTYLE — dark with grain, text at bottom */
-function drawLifestyleSlide(ctx, w, h, slide, idx, brand) {
-  ctx.fillStyle = '#1a1a1a';
-  ctx.fillRect(0, 0, w, h);
-  drawDotTexture(ctx, w, h, 'rgba(255,255,255,0.035)', 14);
-
-  /* subtle orange corner accent */
+  /* slide counter — use onP for contrast */
   ctx.save();
-  ctx.fillStyle = ORANGE;
-  ctx.globalAlpha = 0.15;
+  ctx.font = `500 ${Math.round(w*0.032)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.onP; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}  /  5`, w - w*0.06, h - w*0.045);
+  ctx.restore();
+}
+
+/* FEATURE — accent left panel, brand bg right, headline in primary */
+function drawFeatureSlide(ctx, w, h, slide, idx, brand, pal) {
+  const split = w * 0.38;
+  const onAc = isColorDark(pal.ac) ? '#FFFFFF' : '#111111';
+  const onBg = isColorDark(pal.bg) ? '#FFFFFF' : '#111111';
+
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, split, h);
+  ctx.fillStyle = pal.bg; ctx.fillRect(split, 0, w - split, h);
+  /* divider in primary */
+  ctx.fillStyle = pal.p; ctx.fillRect(split - 3, 0, 6, h);
+
+  /* ghost number on left */
+  ctx.save();
+  ctx.font = `800 ${Math.round(split * 0.5)}px Arial Black, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.12; ctx.textAlign = 'center';
+  ctx.fillText(`${idx+1}`, split * 0.5, h * 0.65);
+  ctx.restore();
+
+  /* emoji on left */
+  ctx.font = `${Math.round(split * 0.27)}px serif`;
+  ctx.fillStyle = onAc; ctx.textAlign = 'center'; ctx.globalAlpha = 1;
+  ctx.fillText(slide.emoji || '✦', split * 0.5, h * 0.47);
+
+  /* brand on left panel bottom */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w * 0.026)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.65; ctx.textAlign = 'center';
+  ctx.fillText(brand.name.toUpperCase(), split * 0.5, h * 0.91);
+  ctx.restore();
+
+  /* headline on right — in primary color */
+  const rx = split + w * 0.055, rMaxW = w - split - w * 0.075;
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.082), 'Arial Black, sans-serif', slide.headline, rMaxW, 3, 18);
+  ctx.fillStyle = pal.p; ctx.textAlign = 'left';
+  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
+  const hStartY = h * 0.34;
+  hLines.forEach((ln, i) => ctx.fillText(ln, rx, hStartY + i * hSz * 1.22));
+
+  /* rule in accent */
+  const ruleY = hStartY + hLines.length * hSz * 1.22 - hSz * 0.3;
+  ctx.fillStyle = pal.ac; ctx.fillRect(rx, ruleY, rMaxW * 0.45, 3);
+
+  /* subtitle — in onBg */
+  const subY = Math.min(ruleY + hSz * 0.75, h * 0.8);
+  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.039), 'Inter, system-ui, sans-serif', slide.sub, rMaxW, 2, 13);
+  ctx.fillStyle = onBg; ctx.globalAlpha = 0.7;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, rx, subY + i * sSz * 1.45));
+  ctx.globalAlpha = 1;
+
+  slideLabel(ctx, w, h, idx);
+}
+
+/* STAT — dark bg, accent-colored giant number for maximum pop */
+function drawStatSlide(ctx, w, h, slide, idx, brand, pal) {
+  const bg = isColorDark(pal.p) ? pal.p : pal.nearBlack;
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+
+  /* decorative corner accent */
+  ctx.save();
+  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.2;
+  ctx.fillRect(0, 0, w * 0.25, h * 0.008);
+  ctx.fillRect(0, 0, w * 0.008, h * 0.25);
+  ctx.fillRect(w * 0.75, h - h*0.008, w * 0.25, h * 0.008);
+  ctx.fillRect(w - w*0.008, h * 0.75, w * 0.008, h * 0.25);
+  ctx.restore();
+
+  /* top accent bar */
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, w, Math.round(h * 0.009));
+
+  /* stat headline in ACCENT color — maximum contrast + brand identity */
+  const statMaxW = w * 0.84;
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.2), 'Arial Black, sans-serif', slide.headline, statMaxW, 2, 28);
+  ctx.fillStyle = pal.ac; ctx.textAlign = 'center';
+  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
+  const hStartY = h * 0.47 - (hLines.length - 1) * hSz * 0.55;
+  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, hStartY + i * hSz * 1.12));
+
+  /* rule in accent */
+  const ruleY = hStartY + hLines.length * hSz * 1.12 - hSz * 0.25;
+  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.4;
+  ctx.fillRect(w * 0.3, ruleY, w * 0.4, 2);
+  ctx.globalAlpha = 1;
+
+  /* subtitle white */
+  const subY = ruleY + Math.round(w * 0.06);
+  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.048), 'Inter, system-ui, sans-serif', slide.sub, statMaxW, 2, 14);
+  ctx.fillStyle = '#FFFFFF'; ctx.globalAlpha = 0.65;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.5, subY + i * sSz * 1.4));
+  ctx.globalAlpha = 1;
+
+  /* brand bottom in accent */
+  ctx.save();
+  ctx.font = `600 ${Math.round(w * 0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.ac; ctx.globalAlpha = 0.7;
+  ctx.fillText(brand.name.toUpperCase(), w * 0.5, h * 0.93);
+  ctx.restore();
+}
+
+/* LIFESTYLE — brand bg full background, primary headline, accent rule */
+function drawLifestyleSlide(ctx, w, h, slide, idx, brand, pal) {
+  const onBg = isColorDark(pal.bg) ? '#FFFFFF' : pal.nearBlack;
+
+  /* full brand bg */
+  ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, w, h);
+
+  /* decorative accent band at top */
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, w, Math.round(h * 0.009));
+
+  /* large decorative circle (brand primary) */
+  ctx.save();
+  ctx.fillStyle = pal.p; ctx.globalAlpha = 0.08;
   ctx.beginPath();
-  ctx.arc(w, 0, w * 0.55, 0, Math.PI*2);
+  ctx.arc(w * 0.82, h * 0.28, w * 0.38, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  /* bottom text gradient */
-  const grad = ctx.createLinearGradient(0, h*0.5, 0, h);
-  grad.addColorStop(0, 'rgba(0,0,0,0)');
-  grad.addColorStop(1, 'rgba(0,0,0,0.85)');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
+  /* brand name top */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = pal.p; ctx.globalAlpha = 0.8; ctx.textAlign = 'left';
+  ctx.fillText(brand.name.toUpperCase(), w*0.08, w*0.09);
+  ctx.restore();
 
-  /* emoji */
-  ctx.font = `${w * 0.15}px serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText(slide.emoji, w * 0.5, h * 0.46);
+  /* headline in primary — centered in upper half */
+  const tMaxW = w * 0.82;
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.1), 'Arial Black, sans-serif', slide.headline, tMaxW, 3, 22);
+  ctx.fillStyle = pal.p; ctx.textAlign = 'left';
+  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
+  const hStartY = h * 0.32;
+  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, hStartY + i * hSz * 1.18));
 
-  /* headline */
-  ctx.fillStyle = WHITE;
-  ctx.font = `800 ${w * 0.1}px Syne, Arial Black, sans-serif`;
-  slide.headline.split('\n').forEach((ln, i) =>
-    ctx.fillText(ln, w * 0.5, h * 0.63 + i * w * 0.115)
-  );
+  /* accent rule below headline */
+  const ruleY = hStartY + hLines.length * hSz * 1.18 - hSz * 0.3;
+  ctx.fillStyle = pal.ac; ctx.fillRect(w * 0.08, ruleY, w * 0.22, Math.round(h * 0.005));
 
-  /* sub */
-  ctx.fillStyle = ORANGE;
-  ctx.font = `500 ${w * 0.048}px Inter, sans-serif`;
-  ctx.fillText(slide.sub, w * 0.5, h * 0.85);
+  /* subtitle — in onBg */
+  const subY = Math.min(ruleY + hSz * 0.85, h * 0.8);
+  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.044), 'Inter, system-ui, sans-serif', slide.sub, tMaxW, 2, 14);
+  ctx.fillStyle = onBg; ctx.globalAlpha = 0.72;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, subY + i * sSz * 1.45));
+  ctx.globalAlpha = 1;
 
-  ctx.textAlign = 'left';
-  drawBrandTag(ctx, 20, 20, brand.name);
-  drawSlideNumber(ctx, w, h, idx, 5);
+  slideLabel(ctx, w, h, idx);
 }
 
-/* CTA — cream, orange box with invite */
-function drawCtaSlide(ctx, w, h, slide, idx, brand) {
-  ctx.fillStyle = CREAM;
-  ctx.fillRect(0, 0, w, h);
-  drawDotTexture(ctx, w, h, 'rgba(0,0,0,0.05)');
+/* CTA — accent bg full, contrasting headline, strong call to action */
+function drawCtaSlide(ctx, w, h, slide, idx, brand, pal) {
+  const onAc = isColorDark(pal.ac) ? '#FFFFFF' : '#111111';
 
-  /* big orange block offset */
-  const bx = w * 0.06, by = h * 0.38, bw2 = w * 0.88, bh2 = h * 0.32;
-  ctx.fillStyle = BLACK;
-  ctx.fillRect(bx+5, by+5, bw2, bh2);
-  ctx.fillStyle = ORANGE;
-  ctx.fillRect(bx, by, bw2, bh2);
+  /* full accent bg */
+  ctx.fillStyle = pal.ac; ctx.fillRect(0, 0, w, h);
 
-  /* headline inside block */
-  ctx.fillStyle = WHITE;
-  ctx.font = `800 ${w * 0.1}px Syne, Arial Black, sans-serif`;
-  ctx.textAlign = 'center';
-  slide.headline.split('\n').forEach((ln, i) =>
-    ctx.fillText(ln, w * 0.5, by + bh2 * 0.38 + i * w * 0.105)
-  );
+  /* top primary bar */
+  ctx.fillStyle = pal.p; ctx.fillRect(0, 0, w, Math.round(h * 0.009));
 
-  /* emoji above */
-  ctx.font = `${w * 0.14}px serif`;
-  ctx.fillText(slide.emoji, w * 0.5, h * 0.3);
+  /* ghost large arrow bg */
+  ctx.save();
+  ctx.font = `800 ${Math.round(w * 0.55)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.06; ctx.textAlign = 'center';
+  ctx.fillText('→', w * 0.5, h * 0.72);
+  ctx.restore();
 
-  /* sub below block */
-  ctx.fillStyle = hexToRgba(BLACK, 0.5);
-  ctx.font = `500 ${w * 0.048}px Inter, sans-serif`;
-  ctx.fillText(slide.sub, w * 0.5, by + bh2 + 26);
+  /* brand name */
+  ctx.save();
+  ctx.font = `700 ${Math.round(w*0.028)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.75; ctx.textAlign = 'left';
+  ctx.fillText(brand.name.toUpperCase(), w*0.08, w*0.09);
+  ctx.restore();
 
+  /* headline — contrasting on accent */
+  const hMaxW = w * 0.82;
+  const { lines: hLines, s: hSz } = autoFit(ctx, '800', Math.round(w * 0.1), 'Arial Black, sans-serif', slide.headline, hMaxW, 3, 20);
+  ctx.fillStyle = onAc; ctx.textAlign = 'left';
+  ctx.font = `800 ${hSz}px Arial Black, sans-serif`;
+  const hStartY = h * 0.3;
+  hLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, hStartY + i * hSz * 1.18));
+
+  /* primary rule */
+  const ruleY = hStartY + hLines.length * hSz * 1.18 - hSz * 0.32;
+  ctx.fillStyle = pal.p;
+  ctx.fillRect(w * 0.08, ruleY, w * 0.2, Math.round(h * 0.005));
+
+  /* visible arrow in primary */
+  const arrY = Math.min(ruleY + hSz * 1.2, h * 0.74);
+  ctx.fillStyle = pal.p;
+  ctx.font = `700 ${Math.round(w * 0.1)}px Inter, system-ui, sans-serif`;
   ctx.textAlign = 'left';
-  drawBrandTag(ctx, w * 0.06, h * 0.06, brand.name);
-  drawSlideNumber(ctx, w, h, idx, 5);
+  ctx.fillText('→', w * 0.08, arrY);
+
+  /* subtitle / CTA */
+  const subY = Math.min(arrY + Math.round(w * 0.14), h * 0.88);
+  const { lines: sLines, s: sSz } = autoFit(ctx, '400', Math.round(w * 0.041), 'Inter, system-ui, sans-serif', slide.sub, hMaxW, 2, 13);
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.72;
+  ctx.font = `400 ${sSz}px Inter, system-ui, sans-serif`;
+  sLines.forEach((ln, i) => ctx.fillText(ln, w * 0.08, subY + i * sSz * 1.4));
+  ctx.globalAlpha = 1;
+
+  /* slide counter */
+  ctx.save();
+  ctx.font = `500 ${Math.round(w*0.032)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = onAc; ctx.globalAlpha = 0.4; ctx.textAlign = 'right';
+  ctx.fillText(`${idx+1}  /  5`, w - w*0.06, h - w*0.045);
+  ctx.restore();
 }
 
 /* ════════════════════════════════════════════════════
@@ -1748,16 +1812,20 @@ async function makeImages(pi) {
   if (progress) progress.classList.add('active');
 
   try {
+    const refPhotos = state.brand.photos.filter(p => p.src && p.selected !== false).map(p => p.src);
+
     for (let si = 0; si < post.slides.length; si++) {
       const slide = post.slides[si];
       const pct   = Math.round((si / post.slides.length) * 100);
       if (bar) bar.style.width = pct + '%';
 
-      const fullPrompt = buildImagePrompt(slide, post, state.brand);
+      const hasRef = refPhotos.length > 0;
+      const fullPrompt = buildImagePrompt(slide, post, state.brand, hasRef);
+      const referenceImages = hasRef ? [refPhotos[si % refPhotos.length]] : [];
       const res = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: fullPrompt })
+        body: JSON.stringify({ prompt: fullPrompt, referenceImages })
       });
 
       if (!res.ok) {
@@ -1787,17 +1855,23 @@ async function makeImages(pi) {
   }
 }
 
-function buildImagePrompt(slide, post, brand) {
+function buildImagePrompt(slide, post, brand, hasRef = false) {
   const typeStyle = {
-    cover:     'vibrant hero soda can photography, bold colour pop, Gen Z aesthetic, dynamic splash',
-    feature:   'clean product flat lay, colourful pastel background, poppi soda can centred, studio light',
-    stat:      'bold graphic composition, hot pink and yellow high saturation, strong visual energy',
-    lifestyle: 'bright lifestyle photography, trendy young people enjoying drinks outdoors, natural light',
-    cta:       'colourful soda can arrangement, fun energetic mood, Instagram-ready square format'
+    cover:     'hero visual with bold composition, strong focal point, premium marketing creative',
+    feature:   'clean product or feature highlight, professional showcase layout, studio quality',
+    stat:      'bold data visualization or infographic style, high-contrast graphic composition, striking numbers',
+    lifestyle: 'aspirational lifestyle scene, professional photography style, natural and authentic mood',
+    cta:       'action-oriented marketing creative, eye-catching arrangement, clear visual hierarchy'
   };
-  const vibes = (brand.vibes || ['Premium']).join(' ');
-  const base  = slide.imagePrompt || `${slide.type} slide visual for ${brand.name}`;
-  return `${base}. Style: ${typeStyle[slide.type] || 'editorial'}, ${vibes} brand aesthetic, Instagram square 1:1 format, professional quality. No text, no typography in the image.`;
+  const vibes = (brand.vibes || ['Professional']).join(', ');
+  const style = typeStyle[slide.type] || 'editorial marketing visual';
+  const colors = `Brand colors: ${brand.primaryColor} and ${brand.accentColor}`;
+  const refNote = hasRef ? ' Use the reference product photo as visual inspiration for style and product appearance.' : '';
+
+  if (slide.imagePrompt) {
+    return `${slide.imagePrompt}. ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.${refNote}`;
+  }
+  return `${slide.type} slide visual for ${brand.name} (${vibes} aesthetic). ${style}. ${colors}. Instagram square 1:1 format, professional marketing quality. No text, no typography, no words in the image.${refNote}`;
 }
 
 /* ════════════════════════════════════════════════════
@@ -2046,12 +2120,12 @@ async function fetchBrand() {
 
   /* Known brands — instant local fallback */
   const localBrands = {
-    poppi:     { name:'poppi',     primaryColor:'#FF2D6B', accentColor:'#FFE000', bgColor:'#FFFFFF', font:'Plus Jakarta Sans', vibes:['Vibrant','Playful','Bold','Health-forward'], pg:[['#FF2D6B','#FF85A1'],['#FFE000','#FFB700'],['#7B61FF','#B48AF7'],['#00C9A7','#00E4BF']] },
-    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',           vibes:['Minimal','Sustainable','Natural'],            pg:[['#9b7543','#c5b08a'],['#4a7c59','#a8d5b5'],['#2c3e50','#4a6fa5'],['#8b6f47','#d4a76a']] },
-    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',       vibes:['Bold','Athletic','Energetic'],                pg:[['#ff6b00','#ff8c00'],['#111','#333'],['#e8e8e8','#fff'],['#cc3300','#ff6600']] },
-    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',    vibes:['Minimal','Tech','Premium'],                   pg:[['#1d1d1f','#333'],['#0071e3','#0077ed'],['#f5f5f7','#e8e8ed'],['#86868b','#6e6e73']] },
-    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',           vibes:['Outdoor','Sustainable','Rugged'],             pg:[['#5f9ea0','#7fb3b5'],['#2d5016','#4a7c28'],['#8b6914','#b8891a'],['#1a3d5c','#2e6da4']] },
-    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',         vibes:['Minimal','Beauty','Soft'],                    pg:[['#e8b4a0','#f0c4b0'],['#fef8f5','#fdeee6'],['#d4a0a0','#e8b8b8'],['#c8a0a0','#dcb4b4']] },
+    poppi:     { name:'poppi',     primaryColor:'#FF2D6B', accentColor:'#FFE000', bgColor:'#FFFFFF', font:'Plus Jakarta Sans', vibes:['Vibrant','Playful','Bold','Health-forward'], photos:[] },
+    allbirds:  { name:'Allbirds',  primaryColor:'#1a1a2e', accentColor:'#9b7543', bgColor:'#f5f0eb', font:'Georgia',           vibes:['Minimal','Sustainable','Natural'],            photos:[] },
+    nike:      { name:'Nike',      primaryColor:'#111111', accentColor:'#ff6b00', bgColor:'#f8f8f8', font:'Arial Black',       vibes:['Bold','Athletic','Energetic'],                photos:[] },
+    apple:     { name:'Apple',     primaryColor:'#1d1d1f', accentColor:'#0071e3', bgColor:'#f5f5f7', font:'Helvetica Neue',    vibes:['Minimal','Tech','Premium'],                   photos:[] },
+    patagonia: { name:'Patagonia', primaryColor:'#23282d', accentColor:'#5f9ea0', bgColor:'#f0ebe3', font:'Georgia',           vibes:['Outdoor','Sustainable','Rugged'],             photos:[] },
+    glossier:  { name:'Glossier',  primaryColor:'#2f2f2f', accentColor:'#e8b4a0', bgColor:'#fef8f5', font:'Helvetica',         vibes:['Minimal','Beauty','Soft'],                    photos:[] },
   };
 
   const localKey = Object.keys(localBrands).find(k => url.toLowerCase().includes(k));
@@ -2068,14 +2142,29 @@ async function fetchBrand() {
       body: JSON.stringify({ url })
     });
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
-    const { brand } = await res.json();
-    /* Give it placeholder photos based on extracted colours */
-    brand.pg = [
-      [brand.primaryColor, brand.accentColor],
-      [brand.accentColor,  brand.bgColor],
-      [brand.bgColor,      brand.primaryColor],
-      [brand.primaryColor, brand.bgColor]
-    ];
+    const { brand, imageUrls } = await res.json();
+
+    /* Proxy brand images to base64 so they can render in canvas */
+    if (imageUrls && imageUrls.length) {
+      const settled = await Promise.allSettled(
+        imageUrls.map(async (imgUrl, i) => {
+          const r = await fetch('/api/proxy-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: imgUrl })
+          });
+          if (!r.ok) throw new Error('proxy failed');
+          const { imageUrl } = await r.json();
+          return { src: imageUrl, label: `Brand Photo ${i + 1}`, selected: true };
+        })
+      );
+      brand.photos = settled
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value);
+    } else {
+      brand.photos = [];
+    }
+
     applyBrandKit(brand, btn);
   } catch (err) {
     /* Generic fallback */
@@ -2083,10 +2172,9 @@ async function fetchBrand() {
     applyBrandKit({
       name: domain.charAt(0).toUpperCase() + domain.slice(1),
       primaryColor: '#111111', accentColor: '#F04E00', bgColor: '#F6F2EC',
-      font: 'Georgia', vibes: ['Minimal', 'Modern'],
-      pg:[['#F04E00','#ff8150'],['#111','#333'],['#F6F2EC','#fff'],['#888','#aaa']]
+      font: 'Georgia', vibes: ['Minimal', 'Modern'], photos: []
     }, btn);
-    toast('Claude unavailable — used domain name as fallback', 'info');
+    toast(`Brand AI error: ${err.message || 'check OPENROUTER_API_KEY in Railway'} — used fallback`, 'info');
   }
 }
 
@@ -2094,7 +2182,7 @@ function applyBrandKit(b, btn) {
   state.brand.name = b.name; state.brand.primaryColor = b.primaryColor;
   state.brand.accentColor = b.accentColor; state.brand.bgColor = b.bgColor;
   state.brand.font = b.font; state.brand.vibes = b.vibes || [];
-  state.brand.photos = (b.pg || []).map((g, i) => ({ gradient: g, label: `Photo ${i+1}` }));
+  state.brand.photos = (b.photos || []).map(p => ({ src: p.src, label: p.label, selected: true }));
   document.getElementById('brandMetaName').textContent = b.name;
   btn.textContent = '→ Load'; btn.disabled = false;
   renderBrandPanel();
@@ -2137,25 +2225,38 @@ function renderVibeTags() {
 function renderPhotosGrid() {
   const grid = document.getElementById('photosGrid');
   grid.innerHTML = state.brand.photos.map((p,i) => `
-    <div class="photo-item selected" onclick="togglePhoto(this,${i})" id="photo-${i}">
+    <div class="photo-item${p.selected !== false ? ' selected' : ''}" onclick="togglePhoto(this,${i})" id="photo-${i}">
       <canvas id="photo-canvas-${i}" width="160" height="160"></canvas>
     </div>`).join('') + `
     <div class="photo-add" onclick="uploadPhoto()">
       <span class="photo-add-icon">+</span><span>Upload</span>
     </div>`;
+
+  const badge = document.querySelector('.detected-badge');
+  if (badge) badge.textContent = state.brand.photos.length
+    ? `✓ ${state.brand.photos.length} photos`
+    : 'Upload photos';
+
   state.brand.photos.forEach((p,i) => {
     const c = document.getElementById(`photo-canvas-${i}`);
     if (!c) return;
     const ctx = c.getContext('2d');
-    const g = ctx.createLinearGradient(0,0,160,160);
-    g.addColorStop(0, p.gradient[0]); g.addColorStop(1, p.gradient[1]);
-    ctx.fillStyle = g; ctx.fillRect(0,0,160,160);
-    /* orange accent dot */
-    ctx.fillStyle = hexToRgba(ORANGE, 0.5);
-    ctx.fillRect(0,0,4,160);
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(p.label, 80, 130);
+
+    if (p.src) {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.max(160 / img.width, 160 / img.height);
+        const sw = img.width * scale, sh = img.height * scale;
+        const sx = (160 - sw) / 2, sy = (160 - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh);
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.fillRect(0, 125, 160, 35);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(p.label, 80, 146);
+      };
+      img.src = p.src;
+    }
   });
 }
 
@@ -2177,14 +2278,18 @@ function toggleVibe(el) {
   el.classList.toggle('active');
   state.brand.vibes = Array.from(document.querySelectorAll('.vibe-tag.active')).map(t => t.textContent);
 }
-function togglePhoto(el) { el.classList.toggle('selected'); }
+function togglePhoto(el, idx) {
+  el.classList.toggle('selected');
+  if (state.brand.photos[idx] !== undefined)
+    state.brand.photos[idx].selected = el.classList.contains('selected');
+}
 function uploadPhoto() {
   const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
   inp.addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return;
     const r = new FileReader();
     r.onload = ev => {
-      state.brand.photos.push({src:ev.target.result, gradient:['#666','#999'], label:f.name.split('.')[0]});
+      state.brand.photos.push({src:ev.target.result, label:f.name.split('.')[0], selected:true});
       renderPhotosGrid(); toast('Photo uploaded ✓','success');
     };
     r.readAsDataURL(f);

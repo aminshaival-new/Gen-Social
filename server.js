@@ -4,6 +4,7 @@ const session = require('express-session');
 const path    = require('path');
 
 const app = express();
+app.set('trust proxy', 1); // Railway runs behind a proxy; needed for secure cookies
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
 
@@ -15,6 +16,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     maxAge:   8 * 60 * 60 * 1000   // 8 hours
   }
 }));
@@ -30,7 +32,7 @@ app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
   if (username === process.env.AUTH_USER && password === process.env.AUTH_PASS) {
     req.session.authed = true;
-    return res.json({ ok: true });
+    return req.session.save(() => res.json({ ok: true }));
   }
   res.status(401).json({ error: 'Wrong username or password' });
 });
@@ -71,7 +73,7 @@ async function callOpenRouter(messages, maxTokens = 4096) {
       'X-Title':       'Gen Social'
     },
     body: JSON.stringify({
-      model:      'anthropic/claude-opus-4',
+      model:      'anthropic/claude-sonnet-4-6',
       max_tokens: maxTokens,
       messages
     })
@@ -99,6 +101,48 @@ app.get('/api/config-status', (_req, res) => {
   });
 });
 
+/* ─── helpers ────────────────────────────────────────────────── */
+function extractImages(html, baseUrl) {
+  const found = new Set();
+
+  // OG / Twitter meta images (highest quality, intentional brand imagery)
+  const metaRe = /<meta[^>]+(?:property=["']og:image["']|name=["']twitter:image["'])[^>]+content=["']([^"']+)["']/gi;
+  const metaRe2 = /<meta[^>]+content=["']([^"']+)["'][^>]+(?:property=["']og:image["']|name=["']twitter:image["'])/gi;
+  for (const re of [metaRe, metaRe2]) {
+    let m;
+    while ((m = re.exec(html)) !== null) found.add(m[1]);
+  }
+
+  // <img src> tags — skip icons/favicons/logos/svgs
+  const imgRe = /<img[^>]+src=["']([^"']+)["']/gi;
+  let m;
+  while ((m = imgRe.exec(html)) !== null) {
+    const src = m[1];
+    if (/favicon|\.svg|logo|icon/i.test(src)) continue;
+    found.add(src);
+  }
+
+  // Also check data-src for lazy-loaded images
+  const lazRe = /<img[^>]+data-src=["']([^"']+)["']/gi;
+  while ((m = lazRe.exec(html)) !== null) {
+    const src = m[1];
+    if (/favicon|\.svg|logo|icon/i.test(src)) continue;
+    found.add(src);
+  }
+
+  // Resolve to absolute URLs and return up to 6
+  const base = new URL(baseUrl);
+  const results = [];
+  for (const src of found) {
+    try {
+      const abs = new URL(src, base).href;
+      if (abs.startsWith('http')) results.push(abs);
+      if (results.length >= 6) break;
+    } catch (_) {}
+  }
+  return results;
+}
+
 /* ─── POST /api/brand-analyze ────────────────────────────────── */
 app.post('/api/brand-analyze', async (req, res) => {
   try {
@@ -106,12 +150,14 @@ app.post('/api/brand-analyze', async (req, res) => {
     const { url } = req.body;
 
     let siteText = `Website: ${url}`;
+    let imageUrls = [];
     try {
       const page = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BrandBot/1.0)' },
         signal: AbortSignal.timeout(8000)
       });
       const html = await page.text();
+      imageUrls = extractImages(html, url);
       siteText = html
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -140,7 +186,7 @@ Return exactly:
     }], 512);
 
     const brand = parseJSON(getText(data));
-    res.json({ brand });
+    res.json({ brand, imageUrls });
   } catch (err) {
     console.error('/api/brand-analyze', err.message);
     res.status(500).json({ error: err.message });
@@ -159,8 +205,8 @@ app.post('/api/generate-ideas', async (req, res) => {
 
 Brand name: ${brand.name}
 Brand vibe: ${(brand.vibes || []).join(', ')}
-Brand colours: primary ${brand.primaryColor}, accent ${brand.accentColor}
-Campaign brief: ${prompt}
+Brand colours: primary ${brand.primaryColor}, accent ${brand.accentColor}, background ${brand.bgColor || '#FFFFFF'}
+Industry/campaign brief: ${prompt}
 
 Return this JSON shape:
 {
@@ -175,7 +221,7 @@ Return this JSON shape:
           "headline": "Short\\nHook",
           "sub": "Supporting subtitle, max 8 words",
           "emoji": "🎯",
-          "imagePrompt": "Detailed visual prompt for FLUX image generation, max 180 chars. Subject, lighting, mood, colours, composition. No text in image."
+          "imagePrompt": "see rules below"
         }
       ]
     }
@@ -183,7 +229,14 @@ Return this JSON shape:
 }
 
 Each post needs exactly 5 slides: cover → feature → [stat or feature] → lifestyle → cta
-imagePrompt must describe a photograph or illustration, NOT text or typography.`
+
+IMAGEPROMPT RULES — each imagePrompt must describe a complete professional Instagram marketing slide design (like a finished ad creative), NOT a photo. Include:
+- Slide type purpose (cover hero / feature highlight / stat data / lifestyle scene / CTA action)
+- Brand color palette: dominant ${brand.primaryColor}, accent ${brand.accentColor}
+- Clean B2B/professional corporate style matching the brand vibe
+- Specific visual composition: what imagery, layout, and graphic elements appear (product mockup, app screenshot style, industry equipment, abstract data graphic, bold typography layout, etc.)
+- "Instagram square format, premium quality, social media ready"
+- Keep under 220 chars. Do NOT mention text overlays or logos — describe only the visual design and imagery.`
     }]);
 
     const result = parseJSON(getText(data));
@@ -217,35 +270,65 @@ Write a fresh, engaging caption. Keep the brand voice. Include 1-2 emojis. End w
   }
 });
 
-/* ─── POST /api/generate-image  (Fal AI — FLUX Pro) ─────────── */
+/* ─── POST /api/proxy-image ──────────────────────────────────── */
+app.post('/api/proxy-image', async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'url required' });
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BrandBot/1.0)' },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!r.ok) return res.status(400).json({ error: `fetch failed: ${r.status}` });
+    const mime = r.headers.get('content-type') || '';
+    if (!mime.startsWith('image/')) return res.status(400).json({ error: 'Not an image' });
+    const buf = await r.arrayBuffer();
+    if (buf.byteLength > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image too large' });
+    res.json({ imageUrl: `data:${mime};base64,${Buffer.from(buf).toString('base64')}` });
+  } catch (err) {
+    console.error('/api/proxy-image', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ─── POST /api/generate-image  (Fal AI — GPT Image 2) ──────── */
 app.post('/api/generate-image', async (req, res) => {
   try {
     if (!requireKey(res, 'FAL_KEY')) return;
-    const { prompt } = req.body;
+    const { prompt, referenceImages } = req.body;
+    const hasRefs = Array.isArray(referenceImages) && referenceImages.length > 0;
 
-    const r = await fetch('https://fal.run/fal-ai/flux-pro/v1.1', {
+    // Use image-to-image edit endpoint when reference photos are provided
+    const endpoint = hasRefs
+      ? 'https://fal.run/openai/gpt-image-2/edit'
+      : 'https://fal.run/openai/gpt-image-2';
+
+    const payload = { prompt, image_size: 'square_hd', quality: 'high', num_images: 1 };
+    if (hasRefs) payload.image_urls = referenceImages;
+
+    const r = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type':  'application/json',
         'Authorization': `Key ${process.env.FAL_KEY}`
       },
-      body: JSON.stringify({
-        prompt,
-        image_size:            'square_hd',
-        num_images:            1,
-        enable_safety_checker: false
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(120_000)
     });
 
-    const data = await r.json();
+    // Read raw text first — Fal can return HTML error pages on bad routes
+    const raw = await r.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch(_) { throw new Error(`Fal AI ${r.status} — ${raw.slice(0, 300)}`); }
+
     if (!r.ok || !data.images?.[0]?.url) {
-      throw new Error(data.message || data.detail || `Fal AI ${r.status}`);
+      throw new Error(data.message || data.detail || data.error || `Fal AI ${r.status}: ${JSON.stringify(data)}`);
     }
 
     const imgRes = await fetch(data.images[0].url);
     const imgBuf = await imgRes.arrayBuffer();
-    const mime   = imgRes.headers.get('content-type') || 'image/jpeg';
+    const mime   = imgRes.headers.get('content-type') || 'image/png';
     const b64    = Buffer.from(imgBuf).toString('base64');
 
     res.json({ imageUrl: `data:${mime};base64,${b64}` });
