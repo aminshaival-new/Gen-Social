@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p ~/.claude/youtube && ln -sf \"$CLAUDE_PROJECT_DIR/.claude/youtube/voice.md\" ~/.claude/youtube/voice.md"
+          }
+        ]
+      }
+    ]
+  }
+}
