@@ -1,0 +1,370 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Creative Threads Catalogue</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400&display=swap">
+<style>
+@page { size: 960px 1200px; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #f7f1e6; }
+body { font-family: 'Jost', sans-serif; color: #342c26; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { width: 960px; height: 1200px; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+.bg { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); object-fit: cover; }
+.veil { position: absolute; inset: 0; background: rgba(40, 30, 22, .12); }
+.card { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex;
+  background: #fbf7ec; border: 7px solid #fffdf8; box-shadow: 0 30px 70px rgba(30, 20, 10, .28); }
+.info { position: relative; display: flex; flex-direction: column; align-items: center; padding: 34px 26px; }
+.brand { align-self: flex-start; }
+.brand img { height: 48px; opacity: .9; }
+.detail { position: relative; overflow: hidden; margin: auto 0 0; }
+.detail img { position: absolute; max-width: none; }
+.meta { text-align: center; margin: 28px 0 auto; }
+.num { font-size: 11px; letter-spacing: .32em; text-transform: uppercase; color: #9a8a78; margin-bottom: 10px; }
+h2 { font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 34px; letter-spacing: .12em; }
+.meta p { font-size: 13px; font-weight: 300; margin-top: 10px; line-height: 1.5; letter-spacing: .02em; }
+.meta .sub { margin-top: 4px; color: #7d6e60; font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 16px; }
+.foot { position: absolute; bottom: 30px; font-size: 10px; letter-spacing: .4em; text-transform: uppercase; color: #a8998a; }
+.hero { height: 100%; }
+.hero img { width: 100%; height: 100%; display: block; }
+.cover .full { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.cover .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(40, 8, 12, .72) 0%, rgba(40, 8, 12, 0) 42%); }
+.cv { position: absolute; bottom: 90px; width: 100%; text-align: center; color: #fff; }
+.cv img { width: 470px; }
+.tag { margin-top: 26px; font-size: 14px; letter-spacing: .6em; font-weight: 300; }
+.intro { padding: 90px 80px; text-align: center; }
+.intro .logo { width: 360px; opacity: .92; }
+.lede { font-family: 'Cormorant Garamond', serif; font-size: 23px; line-height: 1.55; font-style: italic;
+  max-width: 600px; margin: 40px auto 0; color: #5a4c40; }
+.rule { width: 60px; height: 1px; background: #b9a894; margin: 40px auto; }
+.grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 26px 18px; }
+.it { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+.it span { color: #a08f7c; }
+.th { height: 200px; overflow: hidden; margin-bottom: 10px; border: 4px solid #fffdf8; box-shadow: 0 6px 16px rgba(60, 40, 20, .12); }
+.th img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.closing .frame { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  height: 1020px; border: 8px solid #fffdf8; box-shadow: 0 30px 70px rgba(30, 20, 10, .3); }
+.closing .frame img { height: 100%; display: block; }
+</style></head><body>
+
+<section class="page cover">
+  <img class="full" src="images/03-kamal.jpg" alt="">
+  <div class="shade"></div>
+  <div class="cv">
+    <img src="images/logo-white.png" alt="Creative Threads">
+    <div class="tag">THE COLLECTION</div>
+  </div>
+</section>
+
+<section class="page intro">
+  <img class="logo" src="images/logo-ink.png" alt="Creative Threads">
+  <p class="lede">Handcrafted silhouettes, thoughtful embroidery and fabrics made to be lived in &mdash;
+  a collection that moves easily from everyday to celebration.</p>
+  <div class="rule"></div>
+  <div class="grid"><div class="it"><div class="th"><img src="images/01-sindoor.jpg" alt=""></div><span>01</span> Sindoor</div><div class="it"><div class="th"><img src="images/02-haldi.jpg" alt=""></div><span>02</span> Haldi</div><div class="it"><div class="th"><img src="images/03-kamal.jpg" alt=""></div><span>03</span> Kamal</div><div class="it"><div class="th"><img src="images/04-champa.jpg" alt=""></div><span>04</span> Champa</div><div class="it"><div class="th"><img src="images/05-kora.jpg" alt=""></div><span>05</span> Kora</div><div class="it"><div class="th"><img src="images/06-basanti.jpg" alt=""></div><span>06</span> Basanti</div><div class="it"><div class="th"><img src="images/07-reti.jpg" alt=""></div><span>07</span> Reti</div><div class="it"><div class="th"><img src="images/08-kattha.jpg" alt=""></div><span>08</span> Kattha</div><div class="it"><div class="th"><img src="images/09-gulaal.jpg" alt=""></div><span>09</span> Gulaal</div><div class="it"><div class="th"><img src="images/10-mehendi.jpg" alt=""></div><span>10</span> Mehendi</div><div class="it"><div class="th"><img src="images/11-aasmaan.jpg" alt=""></div><span>11</span> Aasmaan</div><div class="it"><div class="th"><img src="images/12-rani.jpg" alt=""></div><span>12</span> Rani</div><div class="it"><div class="th"><img src="images/13-neelam.jpg" alt=""></div><span>13</span> Neelam</div><div class="it"><div class="th"><img src="images/14-panna.jpg" alt=""></div><span>14</span> Panna</div><div class="it"><div class="th"><img src="images/16-jamuni.jpg" alt=""></div><span>15</span> Jamuni</div></div>
+</section>
+
+<section class="page look">
+  <img class="bg" src="images/01-sindoor-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:900px;height:773px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/01-sindoor.jpg" style="width:784.0px;height:1045.3px;left:-505.7px;top:-269.2px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 01</div>
+        <h2>SINDOOR</h2>
+        <p>Kaftan Kurta · Straight Pants</p>
+        <p class="sub">Hand-dotted yoke embroidery</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:580px"><img src="images/01-sindoor.jpg" alt="Sindoor"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/02-haldi-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:792px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/02-haldi.jpg" style="width:705.6px;height:1255.1px;left:-254.8px;top:-348.9px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 02</div>
+        <h2>HALDI</h2>
+        <p>Kurta · Palazzo</p>
+        <p class="sub">Floral thread work on yoke, cuffs & hem</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:472px"><img src="images/02-haldi.jpg" alt="Haldi"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/03-kamal-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:900px;height:773px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/03-kamal.jpg" style="width:823.2px;height:1097.6px;left:-313.6px;top:-267.1px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 03</div>
+        <h2>KAMAL</h2>
+        <p>Kurta · Flared Sharara · Dupatta</p>
+        <p class="sub">Lotus appliqué, scalloped edges</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:580px"><img src="images/03-kamal.jpg" alt="Kamal"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/04-champa-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:793px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/04-champa.jpg" style="width:588.0px;height:1044.8px;left:-196.0px;top:-561.6px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 04</div>
+        <h2>CHAMPA</h2>
+        <p>Tiered Midi Dress</p>
+        <p class="sub">Scattered floral embroidery</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:473px"><img src="images/04-champa.jpg" alt="Champa"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/05-kora-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:900px;height:773px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/05-kora.jpg" style="width:705.6px;height:940.8px;left:-304.2px;top:-201.3px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 05</div>
+        <h2>KORA</h2>
+        <p>Sleeveless Tunic · Pants</p>
+        <p class="sub">Hand-stitched pocket motifs, frayed trims</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:580px"><img src="images/05-kora.jpg" alt="Kora"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/06-basanti-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:880px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/06-basanti.jpg" style="width:627.2px;height:940.8px;left:-259.5px;top:-286.0px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 06</div>
+        <h2>BASANTI</h2>
+        <p>Kurta · Dupatta</p>
+        <p class="sub">Floral appliqué, sheer dupatta</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:560px"><img src="images/06-basanti.jpg" alt="Basanti"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/07-reti-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:800px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/07-reti.jpg" style="width:823.2px;height:1441.4px;left:-247.7px;top:-405.3px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 07</div>
+        <h2>RETI</h2>
+        <p>Sleeveless Top · Wide Pants</p>
+        <p class="sub">Tonal floral appliqué</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:480px"><img src="images/07-reti.jpg" alt="Reti"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/08-kattha-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:880px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/08-kattha.jpg" style="width:744.8px;height:1117.2px;left:-274.4px;top:-218.3px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 08</div>
+        <h2>KATTHA</h2>
+        <p>Kurta · Pants · Striped Dupatta</p>
+        <p class="sub">Pintuck yoke, contrast borders</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:560px"><img src="images/08-kattha.jpg" alt="Kattha"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/09-gulaal-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:880px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/09-gulaal.jpg" style="width:823.2px;height:1234.0px;left:-231.3px;top:-452.0px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 09</div>
+        <h2>GULAAL</h2>
+        <p>Tiered Kurta · Dupatta</p>
+        <p class="sub">Embroidered yoke, gold borders</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:560px"><img src="images/09-gulaal.jpg" alt="Gulaal"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/10-mehendi-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:900px;height:648px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/10-mehendi.jpg" style="width:705.6px;height:788.0px;left:-198.4px;top:-242.4px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 10</div>
+        <h2>MEHENDI</h2>
+        <p>Kurta · Dupatta</p>
+        <p class="sub">Beaded floral motifs</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:580px"><img src="images/10-mehendi.jpg" alt="Mehendi"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/11-aasmaan-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:900px;height:725px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/11-aasmaan.jpg" style="width:862.4px;height:1077.6px;left:-290.1px;top:-238.4px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 11</div>
+        <h2>AASMAAN</h2>
+        <p>Anarkali · Palazzo · Dupatta</p>
+        <p class="sub">Embroidered yoke & sleeves</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:580px"><img src="images/11-aasmaan.jpg" alt="Aasmaan"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/12-rani-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:879px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/12-rani.jpg" style="width:901.6px;height:1354.6px;left:-397.9px;top:-413.8px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 12</div>
+        <h2>RANI</h2>
+        <p>Anarkali · Pants · Dupatta</p>
+        <p class="sub">Embroidered neckline, gold trims</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:559px"><img src="images/12-rani.jpg" alt="Rani"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/13-neelam-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:879px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/13-neelam.jpg" style="width:784.0px;height:1177.9px;left:-199.9px;top:-272.5px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 13</div>
+        <h2>NEELAM</h2>
+        <p>Anarkali · Palazzo</p>
+        <p class="sub">Emerald yoke, gold embroidery</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:559px"><img src="images/13-neelam.jpg" alt="Neelam"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/14-panna-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:879px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/14-panna.jpg" style="width:784.0px;height:1177.9px;left:-184.2px;top:-260.7px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 14</div>
+        <h2>PANNA</h2>
+        <p>Tiered Anarkali · Palazzo</p>
+        <p class="sub">Gold yoke & border</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:559px"><img src="images/14-panna.jpg" alt="Panna"></div>
+  </div>
+</section>
+<section class="page look">
+  <img class="bg" src="images/16-jamuni-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="card" style="width:880px;height:840px">
+    <div class="info" style="width:320px">
+      <div class="brand"><img src="images/logo-ink.png" alt="Creative Threads"></div>
+      <div class="detail" style="width:196px;height:256px">
+        <img src="images/16-jamuni.jpg" style="width:666.4px;height:999.6px;left:-195.2px;top:-291.8px" alt="">
+      </div>
+      <div class="meta">
+        <div class="num">Look 15</div>
+        <h2>JAMUNI</h2>
+        <p>Kurta · Pants · Dupatta</p>
+        <p class="sub">Gold lotus motifs, piped seams</p>
+      </div>
+      <div class="foot">The Collection</div>
+    </div>
+    <div class="hero" style="width:560px"><img src="images/16-jamuni.jpg" alt="Jamuni"></div>
+  </div>
+</section>
+
+<section class="page closing">
+  <img class="bg" src="images/15-poster-bg.jpg" alt="">
+  <div class="veil"></div>
+  <div class="frame"><img src="images/15-poster.jpg" alt="Creative Threads exhibition"></div>
+</section>
+</body></html>
